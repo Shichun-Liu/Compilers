@@ -22,3 +22,6 @@ test:	compile
 
 clean :
 	rm -f *.s core *~
+
+run: compile
+	${CLASSDIR}/bin/spim -file stack.s
