@@ -9,7 +9,7 @@
 
 
 class Command {
-   getChar() : String {"Calling from base class." };
+   getChar(): String {"Calling from base class." };
    getNumber():Int {0};
    execute(node: StackNode): StackNode {
       let ret: StackNode in {
@@ -21,7 +21,7 @@ class Command {
 
 class IntCommand inherits Command {
    number: Int;
-   init(num: Int):SELF_TYPE {{number <- num; self;}};
+   init(num: Int): SELF_TYPE {{number <- num; self;}};
    execute(node : StackNode): StackNode {node};
    getNumber(): Int {number};
    getChar(): String {(new A2I).i2a(number)};
@@ -115,7 +115,6 @@ class Main inherits A2I {
       } else if (inString = "d") then {
          printStack();
       } else if (inString = "x") then {
-         (new IO).out_string("stop!\n");
          abort();
       } else if (inString = "e") then {
          let node: StackNode <- stackTop in {
@@ -131,9 +130,8 @@ class Main inherits A2I {
    }};
 
    main() : Object {
-      -- out_string("Nothing implemented\n")
       let inString: String in {
-         while(true) loop {
+         while(not inString = "x") loop {
             (new IO).out_string(">");
             inString <- (new IO).in_string();
             executeStack(inString);
