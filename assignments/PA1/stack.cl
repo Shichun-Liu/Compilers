@@ -56,22 +56,22 @@ class Main inherits IO {
          let num1 : Int <- sum.a2i(stack.top()), num2 : Int <- sum.a2i(stack.next().top()) in {
             pop();pop();
             out_string(sum.i2a(num1));out_string(sum.i2a(num2));
-            stack.push(sum.i2a(num1+num2));
+            stack <- stack.push(sum.i2a(num1+num2));
          }
    };
 
    swap() : Object {
       let s1 : String <- stack.top(), s2 : String <- stack.next().top() in {
          pop();pop();
-         stack.push(s1);
-         stack.push(s2);
+         stack <- stack.push(s1);
+         stack <- stack.push(s2);
       }
    };
 
    execute(): Object {
       if stack.isNil() then 0 
       else if (stack.top() = "s") then {
-         pop();swap();
+         pop(); swap();
       } else if (stack.top() = "+") then {
          pop(); plus();
       } else 0
