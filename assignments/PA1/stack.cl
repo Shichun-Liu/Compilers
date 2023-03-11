@@ -40,9 +40,11 @@ class Cons inherits Stack {
 class Main inherits IO {
    stack : Stack;
 
-   push(s : String) : Object {
-      stack <- stack.push(s)
-   };
+   push(s : String) : Object {{
+      stack <- stack.push(s);
+      out_string(s);
+      out_string("\n");
+   }};
 
    pop() : Object {
       stack <- stack.next()
@@ -63,7 +65,7 @@ class Main inherits IO {
          let num1 : Int <- sum.a2i(stack.top()), num2 : Int <- sum.a2i(stack.next().top()) in {
             pop();
             pop();
-            stack <- stack.push(sum.i2a(num1+num2));
+            push(sum.i2a(num1+num2));
          }
    };
 
