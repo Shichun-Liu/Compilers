@@ -42,8 +42,6 @@ class Main inherits IO {
 
 	push(s : String) : Object {{
 		stack <- stack.push(s);
-		out_string(s);
-		out_string("\n");
 	}};
 
 	pop() : Object {
@@ -56,8 +54,7 @@ class Main inherits IO {
 			out_string(s.top());
 			out_string("\n");
 			printStack(s.next());
-		}
-		fi
+		} fi
 	};
 
 	plus() : Object {
@@ -96,18 +93,13 @@ class Main inherits IO {
 				(new IO).out_string(">");
 				inputCmd <- (new IO).in_string();
 				if (inputCmd = "d") then {
-					push(inputCmd);
-					pop();
+					out_string("\n");
 					printStack(stack);
-				} else if (inputCmd = "s") then 
-					push("s")
-				else if (inputCmd = "+") then 
-					push("+")
-				else if (inputCmd = "e") then 
+				} else if (inputCmd = "e") then 
 					execute()
 				else 
 					push(inputCmd)
-				fi fi fi fi;
+				fi fi;
 			} pool;
 			
 		};
