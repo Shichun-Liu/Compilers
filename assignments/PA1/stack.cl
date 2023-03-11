@@ -40,20 +40,20 @@ class Cons inherits Stack {
 class Main inherits IO {
    	stack : Stack;
 
-	push(s : String) : Object {{
-		stack <- stack.push(s);
-	}};
+	push(s : String) : Object {
+		stack <- stack.push(s)
+	};
 
 	pop() : Object {
 		stack <- stack.next()
 	};
 
-	printStack(s : Stack) : Object {
-		if s.isNil() then out_string("\n")
+	print(s : Stack) : Object {
+		if s.isNil() then 0
 		else {
 			out_string(s.top());
 			out_string("\n");
-			printStack(s.next());
+			print(s.next());
 		} fi
 	};
 
@@ -92,10 +92,9 @@ class Main inherits IO {
 			while(not inputCmd = "x") loop {
 				(new IO).out_string(">");
 				inputCmd <- (new IO).in_string();
-				if (inputCmd = "d") then {
-					out_string("\n");
-					printStack(stack);
-				} else if (inputCmd = "e") then 
+				if (inputCmd = "d") then 
+					print(stack)
+				else if (inputCmd = "e") then 
 					execute()
 				else 
 					push(inputCmd)
