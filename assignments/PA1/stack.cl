@@ -75,23 +75,22 @@ class Main inherits IO {
 		}
 	};
 
-	execute(): Object {{
-		push("e");pop();
+	execute(): Object {
 		if stack.isNil() then 0 
 		else if (stack.top() = "s") then {
 			pop(); swap();
 		} else if (stack.top() = "+") then {
 			pop(); plus();
 		} else 0
-		fi fi fi;
-	}};
+		fi fi fi
+	};
 
 	main() : Object {{
 		stack <- new Stack;
 		let inputCmd: String in {
 			while(not inputCmd = "x") loop {
-				(new IO).out_string(">");
-				inputCmd <- (new IO).in_string();
+				out_string(">");
+				inputCmd <- in_string();
 				if (inputCmd = "d") then 
 					print(stack)
 				else if (inputCmd = "e") then 
@@ -100,7 +99,7 @@ class Main inherits IO {
 					push(inputCmd)
 				fi fi;
 			} pool;
-			
+			out_string("stop!\n");
 		};
 	}};
 
