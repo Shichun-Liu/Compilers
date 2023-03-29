@@ -40,7 +40,7 @@
 #17 '.'
 #17 OBJECTID concat
 #17 '('
-#17 STR_CONST "\n\""
+#17 STR_CONST "\n"
 #17 ')'
 #17 ')'
 #17 ';'
@@ -162,7 +162,7 @@
 #49 OBJECTID position
 #49 ')'
 #49 '='
-#49 STR_CONST "X\""
+#49 STR_CONST "X"
 #49 THEN
 #49 INT_CONST 1
 #49 ELSE
@@ -175,7 +175,7 @@
 #50 OBJECTID position
 #50 ')'
 #50 '='
-#50 STR_CONST "X\""
+#50 STR_CONST "X"
 #50 THEN
 #50 INT_CONST 1
 #50 ELSE
@@ -188,7 +188,7 @@
 #51 OBJECTID position
 #51 ')'
 #51 '='
-#51 STR_CONST "X\""
+#51 STR_CONST "X"
 #51 THEN
 #51 INT_CONST 1
 #51 ELSE
@@ -198,7 +198,7 @@
 #52 INT_CONST 1
 #52 ')'
 #53 THEN
-#54 STR_CONST "X\""
+#54 STR_CONST "X"
 #55 ELSE
 #56 ERROR "'"
 #56 '.'
@@ -299,7 +299,7 @@
 #83 '.'
 #83 OBJECTID init
 #83 '('
-#83 STR_CONST "         X         \""
+#83 STR_CONST "         X         "
 #83 ')'
 #83 ';'
 #84 OBJECTID cells
