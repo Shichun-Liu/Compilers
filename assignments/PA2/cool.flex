@@ -1,11 +1,11 @@
-/* // The scanner definition for COOL.
  
-
-// Stuff enclosed in %{ %} in the first section is copied verbatim to the
-// output, so headers and global definitions are placed here to be visible
-// to the code in the file.  Don't remove anything that was here initially
-
+ /* 
+ * The scanner definition for COOL.
+ * Stuff enclosed in %{ %} in the first section is copied verbatim to the
+ * output, so headers and global definitions are placed here to be visible
+ * to the code in the file.  Don't remove anything that was here initially
  */
+%option noyywrap
 %{
 #include <cool-parse.h>
 #include <stringtab.h>
@@ -49,7 +49,7 @@ int buf_len = 0;
 
 /*
  * Define names for regular expressions here.
- */
+*/
 
 DARROW          =>
 ASSIGN		  	<-
@@ -80,17 +80,15 @@ LINE          \n
 					}
 
 <COMMENT><<EOF>>	{ 
-						cool_yyerror("EOF in comment");
-						YY_FATAL_ERROR("EOF in comment");
+						cool_yylval.error_msg = "EOF in comment";
 						BEGIN INITIAL;
 						return ERROR;
 					}
 "*)"				{
-						cool_yyerror("Unmatched *)");
-						YY_FATAL_ERROR("Unmatched *)");
+						cool_yylval.error_msg = "Unmatched *)";
 						return ERROR;
 					}
-} 
+
  /*
   *  The multiple-character operators.
   */
@@ -122,7 +120,7 @@ LINE          \n
 
 <INITIAL>(?i:true) 	{ cool_yylval.boolean = true; return BOOL_CONST; }
 <INITIAL>(?i:false) { cool_yylval.boolean = false; return BOOL_CONST; }
-<INITIAL>INT_CONST 	{ cool_yylval.symbol = inttable.add_string(yytext) return INT_CONST; }
+<INITIAL>INT_CONST 	{ cool_yylval.symbol = inttable.add_string(yytext); return INT_CONST; }
 <INITIAL>TYPEID 	{ cool_yylval.symbol = idtable.add_string(yytext); return TYPEID; }
 <INITIAL>OBJECTID 	{ cool_yylval.symbol = idtable.add_string(yytext); return OBJECTID; }
  /*
@@ -134,12 +132,11 @@ LINE          \n
 <INITIAL>\"			{ BEGIN STRING; string_buf_ptr = string_buf; }
 <STRING>[^\"\\]*\"	{ 
 						strcpy(string_buf_ptr, yytext);
-						*(string_buf_ptr + yy_len) = '\0';
+						*(string_buf_ptr + yyleng) = '\0';
 
-						buf_len += yy_len;
+						buf_len += yyleng;
 						if (buf_len > MAX_STR_CONST) {
-							cool_yyerror("String constant too long");
-							YY_FATAL_ERROR("String constant too long");
+							cool_yylval.error_msg = "String constant too long";
 							BEGIN INITIAL;
 							return ERROR;
 						}
@@ -151,7 +148,7 @@ LINE          \n
 					}
 <STRING>[^\"\\]*\\	{ 
 						strcpy(string_buf_ptr, yytext);
-						string_buf_ptr += yy_len - 1;
+						string_buf_ptr += yyleng - 1;
 						BEGIN ESCAPE_STRING;
 					}
 <ESCAPE_STRING>"n"	{ *string_buf_ptr++ = '\n';BEGIN STRING; }
@@ -161,24 +158,21 @@ LINE          \n
 <ESCAPE_STRING>.	{ *string_buf_ptr++ = yytext[0];BEGIN STRING; }
 <ESCAPE_STRING>\n	{ *string_buf_ptr++ = '\n';curr_lineno++; BEGIN STRING; }
 <ESCAPE_STRING><<EOF>>	{ 
-						cool_yyerror("EOF in string constant");
-						YY_FATAL_ERROR("EOF in string constant");
+						cool_yylval.error_msg = "EOF in string constant";
 						BEGIN INITIAL;
 						return ERROR;
 					}
 <STRING>[^\"\\]*$	{ 
 						strcpy(string_buf_ptr, yytext);
-						string_buf_ptr += yy_len;
-						buf_len += yy_len;
-						cool_yyerror("Unterminated string constant");
-						YY_FATAL_ERROR("Unterminated string constant");
+						// string_buf_ptr += yyleng;
+						buf_len += yyleng;
+						cool_yylval.error_msg = "Unterminated string constant";
 						curr_lineno++;
 						BEGIN INITIAL;
 						return ERROR;
 					}
 <STRING><<EOF>>		{ 
-						cool_yyerror("EOF in string constant");
-						YY_FATAL_ERROR("EOF in string constant");
+						cool_yylval.error_msg = "EOF in string constant";
 						BEGIN INITIAL;
 						return ERROR;
 					}
@@ -188,6 +182,9 @@ LINE          \n
   */
 [  \f\r\t\v]+ 	{}
 "\n"			{curr_lineno++;}
-[\[\]'>]		{cool_yyerror(yytext); return ERROR;}
+[\[\]'>]		{
+					cool_yylval.error_msg = yytext;
+					return ERROR;
+				}
 .				{ return yytext[0]; }
 %%
