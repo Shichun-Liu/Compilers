@@ -71,12 +71,7 @@ OF              of
 NEW             new
 ISVOID          isvoid
 NOT             not
-TYPEID        [A-Z_][A-Za-z0-9_]*
-OBJECTID      [a-z][A-Za-z0-9_]*
-INT_CONST     [0-9]+
-STR_CONST     \".*\"
-WIHTE_SPACE   [\ \t\n]+
-LINE          \n
+
 %startComment	COMMENT
 %startString  	STRING
 %startESCAPE  	ESCAPE_STRING
@@ -86,25 +81,22 @@ LINE          \n
  /*
   *  Nested comments
   */
---[^\n]* {}
+--*$ {}
 "(*" { comment_layer++; BEGIN COMMENT; }
 
 <COMMENT>[^\n(*]* 	{}
 <COMMENT>\n			{ curr_lineno++;}
 <COMMENT>"*)" 		{ 
 						comment_layer--; 
-						if (comment_layer == 0) BEGIN INITIAL; 
+						if (comment_layer == 0) BEGIN (INITIAL); 
 					}
 
 <COMMENT><<EOF>>	{ 
 						cool_yylval.error_msg = "EOF in comment";
-						BEGIN INITIAL;
+						BEGIN (INITIAL);
 						return (ERROR);
 					}
-"*)"				{
-						cool_yylval.error_msg = "Unmatched *)";
-						return (ERROR);
-					}
+"*)" {cool_yylval.error_msg = "Unmatched *)"; return (ERROR);}
 
  /*
   *  The multiple-character operators.
@@ -135,11 +127,11 @@ LINE          \n
   * which must begin with a lower-case letter.
   */
 
-t(?i:rue) 	{ cool_yylval.boolean = true; return BOOL_CONST; }
-f(?i:alse) 	{ cool_yylval.boolean = false; return BOOL_CONST; }
-[0-9]+ 		{ cool_yylval.symbol = inttable.add_string(yytext); return INT_CONST; }
-[A-Z_][A-Za-z0-9_]* { cool_yylval.symbol = idtable.add_string(yytext); return TYPEID; }
-[a-z][A-Za-z0-9_]* 	{ cool_yylval.symbol = idtable.add_string(yytext); return OBJECTID; }
+t(?i:rue) 	{ cool_yylval.boolean = true; return (BOOL_CONST); }
+f(?i:alse) 	{ cool_yylval.boolean = false; return (BOOL_CONST); }
+[0-9]+ 				{ cool_yylval.symbol = inttable.add_string(yytext); return (INT_CONST); }
+[A-Z][A-Za-z0-9_]* 	{ cool_yylval.symbol = idtable.add_string(yytext); return (TYPEID); }
+[a-z][A-Za-z0-9_]* 	{ cool_yylval.symbol = idtable.add_string(yytext); return (OBJECTID); }
  
  /*
   *  String constants (C syntax)
@@ -147,51 +139,56 @@ f(?i:alse) 	{ cool_yylval.boolean = false; return BOOL_CONST; }
   *  \n \t \b \f, the result is c.
   *
   */
-<INITIAL>\"			{ BEGIN STRING; string_buf_ptr = string_buf; }
+\"					{ BEGIN (STRING); string_buf_ptr = string_buf; }
 <STRING>[^\"\\]*\"	{ 
-						strcpy(string_buf_ptr, yytext);
-						*(string_buf_ptr + yyleng) = '\0';
+	strcpy(string_buf_ptr, yytext);
+	*(string_buf_ptr + yyleng) = '\0';
 
-						buf_len += yyleng;
-						if (buf_len > MAX_STR_CONST) {
-							cool_yylval.error_msg = "String constant too long";
-							BEGIN INITIAL;
-							return (ERROR);
-						}
+	buf_len += yyleng;
+	if (buf_len > MAX_STR_CONST) {
+		cool_yylval.error_msg = "String constant too long";
+		BEGIN (INITIAL);
+		return (ERROR);
+	}
 
-						cool_yylval.symbol = stringtable.add_string(string_buf);
-						buf_len = 0;
-						BEGIN INITIAL;
-						return STR_CONST;
-					}
+	cool_yylval.symbol = stringtable.add_string(string_buf);
+	buf_len = 0;
+	BEGIN (INITIAL);
+	return (STR_CONST);
+}
+
 <STRING>[^\"\\]*\\	{ 
-						strcpy(string_buf_ptr, yytext);
-						string_buf_ptr += yyleng - 1;
-						BEGIN ESCAPE_STRING;
-					}
-<ESCAPE_STRING>"n"	{ *string_buf_ptr++ = '\n';BEGIN STRING; }
-<ESCAPE_STRING>"b"	{ *string_buf_ptr++ = '\b';BEGIN STRING; }
-<ESCAPE_STRING>"t"	{ *string_buf_ptr++ = '\t';BEGIN STRING; }
-<ESCAPE_STRING>"f"	{ *string_buf_ptr++ = '\f';BEGIN STRING; }
-<ESCAPE_STRING>.	{ *string_buf_ptr++ = yytext[0];BEGIN STRING; }
-<ESCAPE_STRING>\n	{ *string_buf_ptr++ = '\n';curr_lineno++; BEGIN STRING; }
+	strcpy(string_buf_ptr, yytext);
+	string_buf_ptr = string_buf + buf_len;
+	buf_len += yyleng - 1;
+
+	BEGIN (ESCAPE_STRING);
+}
+
+<ESCAPE_STRING>"n"	{ *string_buf_ptr++ = '\n'; BEGIN (STRING); }
+<ESCAPE_STRING>"b"	{ *string_buf_ptr++ = '\b'; BEGIN (STRING); }
+<ESCAPE_STRING>"t"	{ *string_buf_ptr++ = '\t'; BEGIN (STRING); }
+<ESCAPE_STRING>"f"	{ *string_buf_ptr++ = '\f'; BEGIN (STRING); }
+<ESCAPE_STRING>.	{ *string_buf_ptr++ = yytext[0]; BEGIN (STRING); }
+<ESCAPE_STRING>\n	{ *string_buf_ptr++ = '\n'; curr_lineno++; BEGIN (STRING); }
 <ESCAPE_STRING><<EOF>>	{ 
 						cool_yylval.error_msg = "EOF in string constant";
-						BEGIN INITIAL;
+						BEGIN (STRING);
 						return (ERROR);
 					}
+
 <STRING>[^\"\\]*$	{ 
 						strcpy(string_buf_ptr, yytext);
 						// string_buf_ptr += yyleng;
 						buf_len += yyleng;
 						cool_yylval.error_msg = "Unterminated string constant";
+						BEGIN (INITIAL);
 						curr_lineno++;
-						BEGIN INITIAL;
 						return (ERROR);
 					}
 <STRING><<EOF>>		{ 
 						cool_yylval.error_msg = "EOF in string constant";
-						BEGIN INITIAL;
+						BEGIN (INITIAL);
 						return (ERROR);
 					}
 

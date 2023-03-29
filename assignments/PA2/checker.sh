@@ -13,4 +13,5 @@ if [ -z "$result" ]; then
   echo "passed"
 else 
   echo "$result"
+  echo "Failed"
 fi
