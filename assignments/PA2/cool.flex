@@ -54,7 +54,24 @@ int buf_len = 0;
 DARROW          =>
 ASSIGN		  	<-
 LE				<=
-TYPEID        [A-Z][A-Za-z0-9_]*
+CLASS           class
+ELSE            else
+FI              fi
+IF              if
+IN              in
+INHERITS        inherits
+LET             let
+LOOP            loop
+POOL            pool
+THEN            then
+WHILE           while
+CASE            case
+ESAC            esac
+OF              of
+NEW             new
+ISVOID          isvoid
+NOT             not
+TYPEID        [A-Z_][A-Za-z0-9_]*
 OBJECTID      [a-z][A-Za-z0-9_]*
 INT_CONST     [0-9]+
 STR_CONST     \".*\"
@@ -69,10 +86,10 @@ LINE          \n
  /*
   *  Nested comments
   */
---[^\n]*		{}
-"(*"			{ comment_layer++; BEGIN COMMENT; }
+--[^\n]* {}
+"(*" { comment_layer++; BEGIN COMMENT; }
 
-<COMMENT>[^\n(*]*	{}
+<COMMENT>[^\n(*]* 	{}
 <COMMENT>\n			{ curr_lineno++;}
 <COMMENT>"*)" 		{ 
 						comment_layer--; 
@@ -82,47 +99,48 @@ LINE          \n
 <COMMENT><<EOF>>	{ 
 						cool_yylval.error_msg = "EOF in comment";
 						BEGIN INITIAL;
-						return ERROR;
+						return (ERROR);
 					}
 "*)"				{
 						cool_yylval.error_msg = "Unmatched *)";
-						return ERROR;
+						return (ERROR);
 					}
 
  /*
   *  The multiple-character operators.
   */
-{DARROW}		{ return (DARROW); }
-{ASSIGN}		{ return (ASSIGN); }
-{LE}			{ return (LE); }
+{DARROW} 	{ return (DARROW); }
+{CLASS} 	{ return (CLASS); }
+{ELSE} 		{ return (ELSE); }
+{FI} 		{ return (FI); }
+{IF} 		{ return (IF); }
+{IN} 		{ return (IN); }
+{INHERITS} 	{ return (INHERITS); }
+{LET} 		{ return (LET); }
+{LOOP} 		{ return (LOOP); }
+{POOL} 		{ return (POOL); }
+{THEN} 		{ return (THEN); }
+{WHILE} 	{ return (WHILE); }
+{CASE} 		{ return (CASE); }
+{ESAC} 		{ return (ESAC); }
+{OF} 		{ return (OF); }
+{NEW} 		{ return (NEW); }
+{ISVOID} 	{ return (ISVOID); }
+{ASSIGN} 	{ return (ASSIGN); }
+{NOT} 		{ return (NOT); }
+{LE} 		{ return (LE); }
 
  /*
   * Keywords are case-insensitive except for the values true and false,
   * which must begin with a lower-case letter.
   */
-(?i:class) 	{ return CLASS; }
-(?i:else) 	{ return ELSE; }
-(?i:fi) 	{ return FI; }
-(?i:if) 	{ return IF; }
-(?i:in) 	{ return IN; }
-(?i:inherits) { return INHERITS; }
-(?i:let) 	{ return LET; }
-(?i:loop) 	{ return LOOP; }
-(?i:pool) 	{ return POOL; }
-(?i:then) 	{ return THEN; }
-(?i:while) 	{ return WHILE; }
-(?i:case) 	{ return CASE; }
-(?i:esac) 	{ return ESAC; }
-(?i:of) 	{ return OF; }
-(?i:new) 	{ return NEW; }
-(?i:isvoid) { return ISVOID; }
-(?i:not) 	{ return NOT; }
 
-<INITIAL>(?i:true) 	{ cool_yylval.boolean = true; return BOOL_CONST; }
-<INITIAL>(?i:false) { cool_yylval.boolean = false; return BOOL_CONST; }
-<INITIAL>INT_CONST 	{ cool_yylval.symbol = inttable.add_string(yytext); return INT_CONST; }
-<INITIAL>TYPEID 	{ cool_yylval.symbol = idtable.add_string(yytext); return TYPEID; }
-<INITIAL>OBJECTID 	{ cool_yylval.symbol = idtable.add_string(yytext); return OBJECTID; }
+t(?i:rue) 	{ cool_yylval.boolean = true; return BOOL_CONST; }
+f(?i:alse) 	{ cool_yylval.boolean = false; return BOOL_CONST; }
+[0-9]+ 		{ cool_yylval.symbol = inttable.add_string(yytext); return INT_CONST; }
+[A-Z_][A-Za-z0-9_]* { cool_yylval.symbol = idtable.add_string(yytext); return TYPEID; }
+[a-z][A-Za-z0-9_]* 	{ cool_yylval.symbol = idtable.add_string(yytext); return OBJECTID; }
+ 
  /*
   *  String constants (C syntax)
   *  Escape sequence \c is accepted for all characters c. Except for 
@@ -138,7 +156,7 @@ LINE          \n
 						if (buf_len > MAX_STR_CONST) {
 							cool_yylval.error_msg = "String constant too long";
 							BEGIN INITIAL;
-							return ERROR;
+							return (ERROR);
 						}
 
 						cool_yylval.symbol = stringtable.add_string(string_buf);
@@ -160,7 +178,7 @@ LINE          \n
 <ESCAPE_STRING><<EOF>>	{ 
 						cool_yylval.error_msg = "EOF in string constant";
 						BEGIN INITIAL;
-						return ERROR;
+						return (ERROR);
 					}
 <STRING>[^\"\\]*$	{ 
 						strcpy(string_buf_ptr, yytext);
@@ -169,12 +187,12 @@ LINE          \n
 						cool_yylval.error_msg = "Unterminated string constant";
 						curr_lineno++;
 						BEGIN INITIAL;
-						return ERROR;
+						return (ERROR);
 					}
 <STRING><<EOF>>		{ 
 						cool_yylval.error_msg = "EOF in string constant";
 						BEGIN INITIAL;
-						return ERROR;
+						return (ERROR);
 					}
 
  /*
@@ -184,7 +202,7 @@ LINE          \n
 "\n"			{curr_lineno++;}
 [\[\]'>]		{
 					cool_yylval.error_msg = yytext;
-					return ERROR;
+					return (ERROR);
 				}
 .				{ return yytext[0]; }
 %%
