@@ -96,14 +96,17 @@ LE              <=
   */
 
 --.* 				{ }
-<INITIAL, COMMENT>"(*" { 
+
+<INITIAL,COMMENT>"(*" { 
   comment_depth++;
   BEGIN(COMMENT);
 }
 
-<COMMENT>[^(\*\))] 	{ if (yytext[0] == '\n') 	++curr_lineno;}
+<COMMENT>[^\*\)] { 
+  if (yytext[0] == '\n') 	++curr_lineno;
+}
 
-<COMMENT>"*)" 		{ 
+<COMMENT>"*)" { 
   comment_depth--;
   if(comment_depth == 0) BEGIN(0); 
 }
