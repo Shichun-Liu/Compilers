@@ -47,8 +47,8 @@ extern YYSTYPE cool_yylval;
 /*
  *  Add Your own definitions here
  */
-static int commentCaller;
-static int stringCaller;
+
+int comment_depth = 0;
 
 %}
 
@@ -80,7 +80,7 @@ ISVOID          isvoid
 ASSIGN          <-
 NOT             not
 LE              <=
-
+        
 %%
 [ \f\r\t\v]+ { }
 
@@ -88,49 +88,49 @@ LE              <=
 
 [\[\]'>] {
   cool_yylval.error_msg = yytext;
-  return (ERROR);
+  return(ERROR);
 }
 
  /*
   *  Nested comments
   */
 
---.*$ { }
+--.* 				{ }
+<INITIAL, COMMENT>"(*" { 
+  comment_depth++;
+  BEGIN(COMMENT);
+}
 
-"(*" {
-	commentCaller = INITIAL;
-    BEGIN(COMMENT);
+<COMMENT>[^(\*\))] 	{ if (yytext[0] == '\n') 	++curr_lineno;}
+
+<COMMENT>"*)" 		{ 
+  comment_depth--;
+  if(comment_depth == 0) BEGIN(0); 
 }
+
 <COMMENT><<EOF>> {
-    BEGIN(commentCaller);
-    cool_yylval.error_msg = "EOF in comment";
-    return (ERROR);
-}
-<COMMENT>[^(\*\))] {
-    if (yytext[0] == '\n') {
-        ++curr_lineno;
-    }
-}
-<COMMENT>"*)" {
-    BEGIN(commentCaller);
-}
-\*\) {
-    cool_yylval.error_msg = "Unmatched *)";
-    return (ERROR);
+  cool_yylval.error_msg = "EOF in comment";
+  BEGIN 0;
+  return (ERROR);
+}	
+
+"*)" {
+  cool_yylval.error_msg = "Unmatched *)";
+  return (ERROR);
 }
 
  /*
   *  The multiple-character operators.
   */
 
-{DARROW} { return (DARROW); }
-{CLASS} { return (CLASS); }
-{ELSE} { return (ELSE); }
-{FI} { return (FI); }
-{IF} { return (IF); }
-{IN} { return (IN); }
-{INHERITS} { return (INHERITS); }
-{LET} { return (LET); }
+{DARROW} 	{ return (DARROW); }
+{CLASS} 	{ return (CLASS); }
+{ELSE} 		{ return (ELSE); }
+{FI} 		{ return (FI); }
+{IF} 		{ return (IF); }
+{IN} 		{ return (IN); }
+{INHERITS} 	{ return (INHERITS); }
+{LET} 		{ return (LET); }
 {LOOP} { return (LOOP); }
 {POOL} { return (POOL); }
 {THEN} { return (THEN); }
@@ -144,7 +144,7 @@ LE              <=
 {NOT} { return (NOT); }
 {LE} { return (LE); }
 
-\n { ++curr_lineno; }
+
 
  /*
   * Keywords are case-insensitive except for the values true and false,
@@ -180,7 +180,6 @@ f(?i:alse) {
   */
 
 \" {
-    stringCaller = INITIAL;
     string_buf.clear();
     BEGIN(STRING);
 }
@@ -189,31 +188,32 @@ f(?i:alse) {
     string_buf.insert(string_buf.end(), yytext, yytext + yyleng - 1);
     BEGIN(STRING_ESCAPE);
 }
-
+<STRING><<EOF>> {
+    cool_yylval.error_msg = "EOF in string constant";
+    BEGIN 0;
+    return (ERROR);
+}
 <STRING>[^\"\\]*\" {
     string_buf.insert(string_buf.end(), yytext, yytext + yyleng - 1);
+    if (string_buf.size() > MAX_STR_CONST) {
+        cool_yylval.error_msg = "String constant too long";
+        BEGIN (0);
+        return (ERROR);
+    } 
     cool_yylval.symbol = stringtable.add_string(&string_buf[0], string_buf.size());
-    BEGIN(stringCaller);
+    BEGIN 0;
     return (STR_CONST);
 }
 <STRING>[^\"\\]*$ {
-    // push first
-    // contains the last character for yytext does not include \n
     string_buf.insert(string_buf.end(), yytext, yytext + yyleng);
-    //setup error later
     cool_yylval.error_msg = "Unterminated string constant";
-    BEGIN(stringCaller);
+    BEGIN 0;
     ++curr_lineno;
     return (ERROR);
 }
-<STRING><<EOF>> {
-    cool_yylval.error_msg = "EOF in string constant";
-    BEGIN(stringCaller);
-    return (ERROR);
-}
+
 
 <STRING_ESCAPE>n {
-    // cout << "escape \\n !" << endl;
     string_buf.push_back('\n');
     BEGIN(STRING);
 }
@@ -229,11 +229,13 @@ f(?i:alse) {
     string_buf.push_back('\f');
     BEGIN(STRING);
 }
-<STRING_ESCAPE>0 {
+
+<STRING_ESCAPE>'\0' {
     cool_yylval.error_msg = "String contains null character";
     BEGIN(STRING);
     return (ERROR);
 }
+
 <STRING_ESCAPE>\n {
     string_buf.push_back('\n');
     ++curr_lineno;

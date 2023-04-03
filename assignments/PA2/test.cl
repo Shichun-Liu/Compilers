@@ -42,7 +42,7 @@ class CellularAutomaton inherits IO {
             cell(position + 1)
         fi
     };
-   
+   -- sssssss
     (* a cell will live if exactly 1 of itself and it's immediate
        neighbors are alive *)
     cell_at_next_evolution(position : Int) : String {
