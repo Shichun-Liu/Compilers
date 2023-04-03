@@ -1,3 +1,4 @@
-#name "test5.cl"
-#1 ERROR "Unmatched *)"
-#7 ERROR "EOF in comment"
+#name "test4.cl"
+#1 STR_CONST ""
+#2 ERROR "String contains escaped null character"
+#2 STR_CONST ""

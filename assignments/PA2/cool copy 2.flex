@@ -56,7 +56,7 @@ int comment_depth = 0;
 %x STRING
 %x STRING_ESCAPE
 
- /*
+/*
  * Define names for regular expressions here.
  */
 
@@ -126,9 +126,9 @@ LE              <=
   *  The multiple-character operators.
   */
 
-"=>" { return (DARROW); }
-"<-" { return (ASSIGN); }
-"<=" { return (LE); }
+"=>" { return DARROW; }
+"<-" { return ASSIGN; }
+"<=" { return LE; }
 "+" { return (int)('+'); }
 "-" { return (int)('-'); }
 "*" { return (int)('*'); }
@@ -209,7 +209,11 @@ f(?i:alse) {
     string_buf.insert(string_buf.end(), yytext, yytext + yyleng - 1);
     BEGIN(STRING_ESCAPE);
 }
-
+<STRING><<EOF>> {
+    cool_yylval.error_msg = "EOF in string constant";
+    BEGIN 0;
+    return (ERROR);
+}
 <STRING>[^\"\\]*\" {
     string_buf.insert(string_buf.end(), yytext, yytext + yyleng - 1);
     if (string_buf.size() > MAX_STR_CONST) {
@@ -221,7 +225,6 @@ f(?i:alse) {
     BEGIN 0;
     return (STR_CONST);
 }
-
 <STRING>[^\"\\]*$ {
     string_buf.insert(string_buf.end(), yytext, yytext + yyleng);
     cool_yylval.error_msg = "Unterminated string constant";
@@ -230,18 +233,11 @@ f(?i:alse) {
     return (ERROR);
 }
 
-<STRING>\0 {
+<STRING>'\0' {
     cool_yylval.error_msg = "String contains null character";
-    BEGIN(0);
+    BEGIN(STRING);
     return (ERROR);
 }
-
-<STRING><<EOF>> {
-    cool_yylval.error_msg = "EOF in string constant";
-    BEGIN 0;
-    return (ERROR);
-}
-
 <STRING_ESCAPE>n {
     string_buf.push_back('\n');
     BEGIN(STRING);
@@ -259,8 +255,8 @@ f(?i:alse) {
     BEGIN(STRING);
 }
 
-<STRING_ESCAPE>\0 {
-    cool_yylval.error_msg = "String contains escaped null character";
+<STRING_ESCAPE>'\0' {
+    cool_yylval.error_msg = "String contains null character";
     BEGIN(STRING);
     return (ERROR);
 }
