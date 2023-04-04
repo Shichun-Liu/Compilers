@@ -37,7 +37,7 @@ extern FILE *fin; /* we read from this file */
 // char string_buf[MAX_STR_CONST]; /* to assemble string constants */
 // char *string_buf_ptr;
 
-std::vector<char> string_buf(MAX_STR_CONST);
+// std::vector<char> string_buf(MAX_STR_CONST);
 
 extern int curr_lineno;
 extern int verbose_flag;
@@ -54,7 +54,6 @@ int comment_depth = 0;
 
 %x COMMENT
 %x STRING
-%x STRING_CONSTANT_ERROR
 
  /*
  * Define names for regular expressions here.
@@ -80,9 +79,7 @@ ISVOID          isvoid
 ASSIGN          <-
 NOT             not
 LE              <=
-NULL            \0
-ESCAPED_NULL	\\\0
-NEWLINE			\n
+
         
 %%
 [ \f\r\t\v]+ { }
@@ -98,14 +95,14 @@ NEWLINE			\n
   *  Nested comments
   */
 
---.* 				{ }
+--.* { }
 
 <INITIAL,COMMENT>"(*" { 
 	comment_depth++;
 	BEGIN(COMMENT);
 }
 
-<COMMENT>[^\*\)] { 
+<COMMENT>[^(\*\))] { 
 	if (yytext[0] == '\n') 	++curr_lineno;
 }
 
@@ -116,7 +113,7 @@ NEWLINE			\n
 
 <COMMENT><<EOF>> {
 	cool_yylval.error_msg = "EOF in comment";
-	BEGIN 0;
+	BEGIN (0);
 	return (ERROR);
 }	
 
@@ -128,17 +125,15 @@ NEWLINE			\n
  /*
   *  The multiple-character operators.
   */
-
-"=>" { return (DARROW); }
-"<-" { return (ASSIGN); }
-"<=" { return (LE); }
+{DARROW} 	{ return (DARROW); }
+{ASSIGN} 	{ return (ASSIGN); }
+{LE} 		{ return (LE); }
 
  /*
   * Keywords are case-insensitive except for the values true and false,
   * which must begin with a lower-case letter.
   */
 
-{DARROW} 	{ return (DARROW); }
 {CLASS} 	{ return (CLASS); }
 {ELSE} 		{ return (ELSE); }
 {FI} 		{ return (FI); }
@@ -155,9 +150,8 @@ NEWLINE			\n
 {OF} 		{ return (OF); }
 {NEW} 		{ return (NEW); }
 {ISVOID} 	{ return (ISVOID); }
-{ASSIGN} 	{ return (ASSIGN); }
 {NOT} 		{ return (NOT); }
-{LE} 		{ return (LE); }
+
 
 t(?i:rue) {
 	cool_yylval.boolean = true;
@@ -192,7 +186,6 @@ f(?i:alse) {
   */
 
 \" {
-    string_buf.clear();
     BEGIN(STRING);
 	yymore();
 }
