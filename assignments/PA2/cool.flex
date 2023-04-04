@@ -207,28 +207,35 @@ f(?i:alse) {
 
 <STRING><<EOF>> {
 	if(yyleng > MAX_STR_CONST) {
-		yylval.error_msg = "String constant too long";
-		BEGIN(0);
-		return ERROR;
+		cool_yylval.error_msg = "String constant too long";
 	} else {
 		cool_yylval.error_msg = "EOF in string constant";
+	}
+		yyrestart(fin);
+		BEGIN(0);
+		return (ERROR);
+	
+}
+
+<STRING>\n {
+	if(yyleng > MAX_STR_CONST) {
+		cool_yylval.error_msg = "String constant too long";
+		curr_lineno++;
+		BEGIN(0);
+		return (ERROR);
+	} else {
+		cool_yylval.error_msg = "Unterminated string constant";
+		curr_lineno++;
 		BEGIN(0);
 		return (ERROR);
 	}
 }
-
-<STRING>\n {
-	yylval.error_msg = "Unterminated string constant";
-	curr_lineno++;
-	BEGIN(0);
-	return (ERROR);
-}
-
+ /* 
 <STRING>\\0 {
 	yylval.error_msg = "Unterminated string constant";
     BEGIN(0);
     return ERROR;
-}
+} */
 
 <STRING>\" {
 	std::string input_buf(yytext, yyleng);
