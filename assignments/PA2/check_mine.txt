@@ -1,4 +1,2 @@
-#name "test4.cl"
-#1 STR_CONST ""
-#2 ERROR "String contains escaped null character"
-#2 STR_CONST ""
+#name "test1.cl"
+#1 ERROR "String constant too long"
