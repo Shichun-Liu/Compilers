@@ -83,6 +83,7 @@ LE              <=
         
 %%
 [ \f\r\t\v]+ { }
+"LET_STMT" {}
 
 "\n" { curr_lineno++; }
 
@@ -117,7 +118,7 @@ LE              <=
 	cool_yylval.error_msg = "EOF in comment";
 	BEGIN (0);
 	return (ERROR);
-}	
+} 
 
 "*)" {
 	cool_yylval.error_msg = "Unmatched *)";

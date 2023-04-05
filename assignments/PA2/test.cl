@@ -74,7 +74,7 @@ class CellularAutomaton inherits IO {
         ) ) )
     };
 };
-
+LET_STMT
 class Main {
     cells : CellularAutomaton;
    

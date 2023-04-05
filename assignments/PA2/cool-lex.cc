@@ -1067,8 +1067,8 @@ YY_RULE_SETUP
 	BEGIN(COMMENT);
 }
 	YY_BREAK
-/* [^\*\)]
-[^\*] | \*[^\)]
+/* 
+[^\*\)]
  */
 case 6:
 /* rule 6 can match eol */
@@ -1092,7 +1092,7 @@ case YY_STATE_EOF(COMMENT):
 	cool_yylval.error_msg = "EOF in comment";
 	BEGIN (0);
 	return (ERROR);
-}	
+}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
