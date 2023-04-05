@@ -13,7 +13,6 @@
 #include <cool-parse.h>
 #include <stringtab.h>
 #include <utilities.h>
-#include <vector>
 
 /* The compiler assumes these identifiers. */
 #define yylval cool_yylval
@@ -34,10 +33,8 @@ extern FILE *fin; /* we read from this file */
 	if ( (result = fread( (char*)buf, sizeof(char), max_size, fin)) < 0) \
 		YY_FATAL_ERROR( "read() in flex scanner failed");
 
-// char string_buf[MAX_STR_CONST]; /* to assemble string constants */
-// char *string_buf_ptr;
-
-// std::vector<char> string_buf(MAX_STR_CONST);
+char string_buf[MAX_STR_CONST]; /* to assemble string constants */
+char *string_buf_ptr;
 
 extern int curr_lineno;
 extern int verbose_flag;
@@ -60,31 +57,34 @@ int comment_depth = 0;
  */
 
 DARROW          =>
-CLASS           class
-ELSE            else
-FI              fi
-IF              if
-IN              in
-INHERITS        inherits
-LET             let
-LOOP            loop
-POOL            pool
-THEN            then
-WHILE           while
-CASE            case
-ESAC            esac
-OF              of
-NEW             new
-ISVOID          isvoid
+CLASS           (?i:class)
+ELSE            (?i:else)
+FI              (?i:fi)
+IF              (?i:if)
+IN              (?i:in)
+INHERITS        (?i:inherits)
+LET             (?i:let)
+LOOP            (?i:loop)
+POOL            (?i:pool)
+THEN            (?i:then)
+WHILE           (?i:while)
+CASE            (?i:case)
+ESAC            (?i:esac)
+OF              (?i:of)
+NEW             (?i:new)
+ISVOID          (?i:isvoid)
 ASSIGN          <-
-NOT             not
+NOT             (?i:not)
 LE              <=
+TRUE            t(?i:rue)
+FALSE           f(?i:alse)
 
         
 %%
 [ \f\r\t\v]+ { }
+ /* 
 "LET_STMT" {}
-
+ */
 "\n" { curr_lineno++; }
 
 [\[\]'>] {
@@ -156,29 +156,29 @@ LE              <=
 {NOT} 		{ return (NOT); }
 
 
-t(?i:rue) {
+{TRUE} {
 	cool_yylval.boolean = true;
-	return BOOL_CONST;
+	return (BOOL_CONST);
 }
 
-f(?i:alse) {
+{FALSE} {
 	cool_yylval.boolean = false;
-	return BOOL_CONST;
+	return (BOOL_CONST);
 }
 
 [0-9]+ {
 	cool_yylval.symbol = inttable.add_string(yytext);
-	return INT_CONST;
+	return (INT_CONST);
 }
 
 [A-Z][a-zA-Z0-9_]* {
 	cool_yylval.symbol = idtable.add_string(yytext);
-	return TYPEID;
+	return (TYPEID);
 }
 
 [a-z][a-zA-Z0-9_]* {
   	cool_yylval.symbol = idtable.add_string(yytext);
-  	return OBJECTID;
+  	return (OBJECTID);
 }
 
  /*
@@ -196,42 +196,35 @@ f(?i:alse) {
 <STRING>[^\\\"\n]* 	{ yymore();}
 <STRING>\\[^\n] 	{ yymore();}
 
-<STRING>\\\n {
-	curr_lineno++;
-	yymore();
-}
-
 <STRING><<EOF>> {
 	if(yyleng > MAX_STR_CONST) {
 		cool_yylval.error_msg = "String constant too long";
 	} else {
 		cool_yylval.error_msg = "EOF in string constant";
 	}
-		yyrestart(fin);
-		BEGIN(0);
-		return (ERROR);
-	
+	yyrestart(fin);
+	BEGIN(0);
+	return (ERROR);
 }
 
 <STRING>\n {
-	if(yyleng > MAX_STR_CONST) {
+	std::string input_buf(yytext, yyleng);
+	input_buf = input_buf.substr(1, input_buf.length() - 2);
+	std::string output_buf = "";
+	std::string::size_type pos;
+
+	if(input_buf.find_first_of('\0') != std::string::npos) {
+		cool_yylval.error_msg = "String contains null character.";
+	} else if(yyleng > MAX_STR_CONST) {
 		cool_yylval.error_msg = "String constant too long";
 		curr_lineno++;
-		BEGIN(0);
-		return (ERROR);
 	} else {
 		cool_yylval.error_msg = "Unterminated string constant";
 		curr_lineno++;
-		BEGIN(0);
-		return (ERROR);
 	}
+	BEGIN(0);
+	return (ERROR);
 }
- /* 
-<STRING>\\0 {
-	yylval.error_msg = "Unterminated string constant";
-    BEGIN(0);
-    return ERROR;
-} */
 
 <STRING>\" {
 	std::string input_buf(yytext, yyleng);
@@ -257,7 +250,7 @@ f(?i:alse) {
 			case '\0':
 				yylval.error_msg = "String contains escaped null character.";
 				BEGIN(0);
-				return ERROR;
+				return (ERROR);
 			default:
 				output_buf += input_buf[pos + 1];
 				break;
@@ -268,19 +261,20 @@ f(?i:alse) {
 	if(input_buf.find_first_of('\0') != std::string::npos) {
 		yylval.error_msg = "String contains null character.";
 		BEGIN(0);
-		return ERROR;
+		return (ERROR);
 	}
 
 	output_buf += input_buf;
 	if(output_buf.length() > MAX_STR_CONST) {
 		yylval.error_msg = "String constant too long";
 		BEGIN(0);
-		return ERROR;
+		return (ERROR);
 	}
 	cool_yylval.symbol = stringtable.add_string((char*)output_buf.c_str());
 	BEGIN(0);
-	return STR_CONST;
+	return (STR_CONST);
 }
+
 
 . {
   return yytext[0];
