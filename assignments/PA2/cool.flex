@@ -101,8 +101,10 @@ LE              <=
 	comment_depth++;
 	BEGIN(COMMENT);
 }
-
-<COMMENT>[^(\*\))] { 
+ /* 
+[^\*\)]
+ */
+<COMMENT>[^\*]|\*[^\)] { 
 	if (yytext[0] == '\n') 	++curr_lineno;
 }
 
