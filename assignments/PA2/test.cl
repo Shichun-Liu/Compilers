@@ -56,7 +56,7 @@ class CellularAutomaton inherits IO {
             '.'
         fi
     };
-   
+   trUe
     evolve() : SELF_TYPE {
         (let position : Int in
         (let num : Int <- num_cells[] in

@@ -651,7 +651,7 @@ static const flex_int16_t yy_rule_linenum[40] =
        85,   89,   91,  100,  102,  109,  113,  124,  132,  133,
       134,  141,  142,  143,  144,  145,  146,  147,  148,  149,
       150,  151,  152,  153,  154,  155,  156,  157,  160,  165,
-      170,  175,  180,  192,  197,  198,  212,  231,  281
+      170,  175,  180,  192,  197,  198,  211,  230,  280
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -1272,7 +1272,7 @@ YY_RULE_SETUP
 #line 160 "cool.flex"
 {
 	cool_yylval.boolean = true;
-	return BOOL_CONST;
+	return (BOOL_CONST);
 }
 	YY_BREAK
 case 30:
@@ -1280,7 +1280,7 @@ YY_RULE_SETUP
 #line 165 "cool.flex"
 {
 	cool_yylval.boolean = false;
-	return BOOL_CONST;
+	return (BOOL_CONST);
 }
 	YY_BREAK
 case 31:
@@ -1288,7 +1288,7 @@ YY_RULE_SETUP
 #line 170 "cool.flex"
 {
 	cool_yylval.symbol = inttable.add_string(yytext);
-	return INT_CONST;
+	return (INT_CONST);
 }
 	YY_BREAK
 case 32:
@@ -1296,7 +1296,7 @@ YY_RULE_SETUP
 #line 175 "cool.flex"
 {
 	cool_yylval.symbol = idtable.add_string(yytext);
-	return TYPEID;
+	return (TYPEID);
 }
 	YY_BREAK
 case 33:
@@ -1304,7 +1304,7 @@ YY_RULE_SETUP
 #line 180 "cool.flex"
 {
   	cool_yylval.symbol = idtable.add_string(yytext);
-  	return OBJECTID;
+  	return (OBJECTID);
 }
 	YY_BREAK
 /*
@@ -1342,13 +1342,12 @@ case YY_STATE_EOF(STRING):
 	yyrestart(fin);
 	BEGIN(0);
 	return (ERROR);
-	
 }
 	YY_BREAK
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 212 "cool.flex"
+#line 211 "cool.flex"
 {
 	std::string input_buf(yytext, yyleng);
 	input_buf = input_buf.substr(1, input_buf.length() - 2);
@@ -1358,7 +1357,7 @@ YY_RULE_SETUP
 	if(input_buf.find_first_of('\0') != std::string::npos) {
 		cool_yylval.error_msg = "String contains null character.";
 	} else if(yyleng > MAX_STR_CONST) {
-		cool_yylval.error_msg = "String constant too long(1)";
+		cool_yylval.error_msg = "String constant too long";
 		curr_lineno++;
 	} else {
 		cool_yylval.error_msg = "Unterminated string constant";
@@ -1370,7 +1369,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 231 "cool.flex"
+#line 230 "cool.flex"
 {
 	std::string input_buf(yytext, yyleng);
 	input_buf = input_buf.substr(1, input_buf.length() - 2);
@@ -1422,17 +1421,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 281 "cool.flex"
+#line 280 "cool.flex"
 {
   return yytext[0];
 }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 284 "cool.flex"
+#line 283 "cool.flex"
 ECHO;
 	YY_BREAK
-#line 1436 "cool-lex.cc"
+#line 1435 "cool-lex.cc"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2581,5 +2580,5 @@ void yyfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 284 "cool.flex"
+#line 283 "cool.flex"
 
