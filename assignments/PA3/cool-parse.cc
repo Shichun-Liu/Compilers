@@ -677,12 +677,12 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   170,   170,   174,   177,   183,   186,   188,   192,   193,
-     196,   197,   198,   201,   202,   203,   206,   207,   208,   211,
-     215,   216,   217,   218,   219,   220,   221,   222,   223,   224,
-     225,   227,   228,   229,   230,   231,   232,   233,   234,   235,
-     237,   239,   241,   242,   243,   248,   251,   254,   257,   260,
-     261,   265,   266,   267,   271,   273,   275,   280,   281,   282
+       0,   170,   170,   173,   175,   180,   183,   185,   189,   190,
+     193,   194,   195,   198,   199,   200,   203,   204,   205,   208,
+     211,   212,   213,   214,   215,   216,   217,   218,   219,   220,
+     221,   223,   224,   225,   226,   227,   228,   229,   230,   231,
+     233,   235,   237,   238,   239,   244,   247,   250,   253,   256,
+     257,   261,   262,   263,   267,   269,   271,   276,   277,   278
 };
 #endif
 
@@ -1703,352 +1703,350 @@ yyreduce:
     break;
 
   case 3:
-#line 175 "cool.y"
-    { (yyval.classes) = single_Classes((yyvsp[0].class_));
-    parse_results = (yyval.classes); }
-#line 1710 "cool.tab.c"
+#line 174 "cool.y"
+                { (yyval.classes) = single_Classes((yyvsp[0].class_)); parse_results = (yyval.classes); }
+#line 1709 "cool.tab.c"
     break;
 
   case 4:
-#line 178 "cool.y"
-    { (yyval.classes) = append_Classes((yyvsp[-1].classes),single_Classes((yyvsp[0].class_))); 
-    parse_results = (yyval.classes); }
-#line 1717 "cool.tab.c"
+#line 176 "cool.y"
+                { (yyval.classes) = append_Classes((yyvsp[-1].classes),single_Classes((yyvsp[0].class_))); parse_results = (yyval.classes); }
+#line 1715 "cool.tab.c"
     break;
 
   case 5:
-#line 184 "cool.y"
-    { (yyval.class_) = class_((yyvsp[-4].symbol),idtable.add_string("Object"),(yyvsp[-2].features),
-    stringtable.add_string(curr_filename)); }
-#line 1724 "cool.tab.c"
+#line 181 "cool.y"
+                { (yyval.class_) = class_((yyvsp[-4].symbol),idtable.add_string("Object"),(yyvsp[-2].features),
+		stringtable.add_string(curr_filename)); }
+#line 1722 "cool.tab.c"
     break;
 
   case 6:
-#line 187 "cool.y"
-    { (yyval.class_) = class_((yyvsp[-6].symbol),(yyvsp[-4].symbol),(yyvsp[-2].features),stringtable.add_string(curr_filename)); }
-#line 1730 "cool.tab.c"
+#line 184 "cool.y"
+                { (yyval.class_) = class_((yyvsp[-6].symbol),(yyvsp[-4].symbol),(yyvsp[-2].features),stringtable.add_string(curr_filename)); }
+#line 1728 "cool.tab.c"
     break;
 
   case 7:
-#line 188 "cool.y"
-                {}
-#line 1736 "cool.tab.c"
+#line 185 "cool.y"
+                        {}
+#line 1734 "cool.tab.c"
     break;
 
   case 8:
-#line 192 "cool.y"
+#line 189 "cool.y"
                                 { (yyval.features) = (yyvsp[0].features); }
-#line 1742 "cool.tab.c"
+#line 1740 "cool.tab.c"
     break;
 
   case 9:
-#line 193 "cool.y"
-          { (yyval.features) = nil_Features(); }
-#line 1748 "cool.tab.c"
+#line 190 "cool.y"
+                  { (yyval.features) = nil_Features(); }
+#line 1746 "cool.tab.c"
     break;
 
   case 10:
-#line 196 "cool.y"
+#line 193 "cool.y"
                                { (yyval.features) = single_Features((yyvsp[-1].feature)); }
-#line 1754 "cool.tab.c"
+#line 1752 "cool.tab.c"
     break;
 
   case 11:
-#line 197 "cool.y"
-                               { (yyval.features) = append_Features((yyvsp[-2].features),single_Features((yyvsp[-1].feature))); }
-#line 1760 "cool.tab.c"
+#line 194 "cool.y"
+                                       { (yyval.features) = append_Features((yyvsp[-2].features),single_Features((yyvsp[-1].feature))); }
+#line 1758 "cool.tab.c"
     break;
 
   case 12:
-#line 198 "cool.y"
-                    {}
-#line 1766 "cool.tab.c"
+#line 195 "cool.y"
+                            {}
+#line 1764 "cool.tab.c"
     break;
 
   case 13:
-#line 201 "cool.y"
+#line 198 "cool.y"
                                                                    { (yyval.feature) = method((yyvsp[-8].symbol),(yyvsp[-6].formals),(yyvsp[-3].symbol),(yyvsp[-1].expression)); }
-#line 1772 "cool.tab.c"
+#line 1770 "cool.tab.c"
     break;
 
   case 14:
-#line 202 "cool.y"
-                              { (yyval.feature) = attr((yyvsp[-2].symbol),(yyvsp[0].symbol), no_expr()); }
-#line 1778 "cool.tab.c"
+#line 199 "cool.y"
+                                      { (yyval.feature) = attr((yyvsp[-2].symbol),(yyvsp[0].symbol), no_expr()); }
+#line 1776 "cool.tab.c"
     break;
 
   case 15:
-#line 203 "cool.y"
-                                          { (yyval.feature) = attr((yyvsp[-4].symbol),(yyvsp[-2].symbol),(yyvsp[0].expression)); }
-#line 1784 "cool.tab.c"
+#line 200 "cool.y"
+                                                  { (yyval.feature) = attr((yyvsp[-4].symbol),(yyvsp[-2].symbol),(yyvsp[0].expression)); }
+#line 1782 "cool.tab.c"
     break;
 
   case 16:
-#line 206 "cool.y"
+#line 203 "cool.y"
                          { (yyval.formals) = single_Formals((yyvsp[0].formal)); }
-#line 1790 "cool.tab.c"
+#line 1788 "cool.tab.c"
     break;
 
   case 17:
-#line 207 "cool.y"
-                             { (yyval.formals) = append_Formals((yyvsp[-2].formals),single_Formals((yyvsp[0].formal))); }
-#line 1796 "cool.tab.c"
+#line 204 "cool.y"
+                                     { (yyval.formals) = append_Formals((yyvsp[-2].formals),single_Formals((yyvsp[0].formal))); }
+#line 1794 "cool.tab.c"
     break;
 
   case 18:
-#line 208 "cool.y"
-          { (yyval.formals) = nil_Formals(); }
-#line 1802 "cool.tab.c"
+#line 205 "cool.y"
+                  { (yyval.formals) = nil_Formals(); }
+#line 1800 "cool.tab.c"
     break;
 
   case 19:
-#line 211 "cool.y"
+#line 208 "cool.y"
                                      { (yyval.formal) = formal((yyvsp[-2].symbol),(yyvsp[0].symbol)); }
-#line 1808 "cool.tab.c"
+#line 1806 "cool.tab.c"
     break;
 
   case 20:
-#line 215 "cool.y"
-                             { (yyval.expression) = assign((yyvsp[-2].symbol),(yyvsp[0].expression)); }
-#line 1814 "cool.tab.c"
+#line 211 "cool.y"
+                                    { (yyval.expression) = assign((yyvsp[-2].symbol),(yyvsp[0].expression)); }
+#line 1812 "cool.tab.c"
     break;
 
   case 21:
-#line 216 "cool.y"
-                                               { (yyval.expression) = dispatch((yyvsp[-5].expression),(yyvsp[-3].symbol),(yyvsp[-1].expressions)); }
-#line 1820 "cool.tab.c"
+#line 212 "cool.y"
+                                                       { (yyval.expression) = dispatch((yyvsp[-5].expression),(yyvsp[-3].symbol),(yyvsp[-1].expressions)); }
+#line 1818 "cool.tab.c"
     break;
 
   case 22:
-#line 217 "cool.y"
-                                      { (yyval.expression) = dispatch(object(idtable.add_string("self")),(yyvsp[-3].symbol),(yyvsp[-1].expressions)); }
-#line 1826 "cool.tab.c"
+#line 213 "cool.y"
+                                              { (yyval.expression) = dispatch(object(idtable.add_string("self")),(yyvsp[-3].symbol),(yyvsp[-1].expressions)); }
+#line 1824 "cool.tab.c"
     break;
 
   case 23:
-#line 218 "cool.y"
-                                                          { (yyval.expression) = static_dispatch((yyvsp[-7].expression),(yyvsp[-5].symbol),(yyvsp[-3].symbol),(yyvsp[-1].expressions)); }
-#line 1832 "cool.tab.c"
+#line 214 "cool.y"
+                                                                  { (yyval.expression) = static_dispatch((yyvsp[-7].expression),(yyvsp[-5].symbol),(yyvsp[-3].symbol),(yyvsp[-1].expressions)); }
+#line 1830 "cool.tab.c"
     break;
 
   case 24:
-#line 219 "cool.y"
-                                         { (yyval.expression) = cond((yyvsp[-5].expression),(yyvsp[-3].expression),(yyvsp[-1].expression)); }
-#line 1838 "cool.tab.c"
+#line 215 "cool.y"
+                                                 { (yyval.expression) = cond((yyvsp[-5].expression),(yyvsp[-3].expression),(yyvsp[-1].expression)); }
+#line 1836 "cool.tab.c"
     break;
 
   case 25:
-#line 220 "cool.y"
-                                    { (yyval.expression) = loop((yyvsp[-3].expression),(yyvsp[-1].expression)); }
-#line 1844 "cool.tab.c"
+#line 216 "cool.y"
+                                            { (yyval.expression) = loop((yyvsp[-3].expression),(yyvsp[-1].expression)); }
+#line 1842 "cool.tab.c"
     break;
 
   case 26:
-#line 221 "cool.y"
-                            { (yyval.expression) = block((yyvsp[-1].expressions)); }
-#line 1850 "cool.tab.c"
+#line 217 "cool.y"
+                                    { (yyval.expression) = block((yyvsp[-1].expressions)); }
+#line 1848 "cool.tab.c"
     break;
 
   case 27:
-#line 222 "cool.y"
-                       { (yyval.expression) = (yyvsp[0].expression); }
-#line 1856 "cool.tab.c"
+#line 218 "cool.y"
+                               { (yyval.expression) = (yyvsp[0].expression); }
+#line 1854 "cool.tab.c"
     break;
 
   case 28:
-#line 223 "cool.y"
-                                      { (yyval.expression) = typcase((yyvsp[-3].expression),(yyvsp[-1].cases)); }
-#line 1862 "cool.tab.c"
+#line 219 "cool.y"
+                                              { (yyval.expression) = typcase((yyvsp[-3].expression),(yyvsp[-1].cases)); }
+#line 1860 "cool.tab.c"
     break;
 
   case 29:
-#line 224 "cool.y"
-                     { (yyval.expression) = new_((yyvsp[0].symbol)); }
-#line 1868 "cool.tab.c"
+#line 220 "cool.y"
+                             { (yyval.expression) = new_((yyvsp[0].symbol)); }
+#line 1866 "cool.tab.c"
     break;
 
   case 30:
-#line 225 "cool.y"
-                      { (yyval.expression) = isvoid((yyvsp[0].expression)); }
-#line 1874 "cool.tab.c"
+#line 221 "cool.y"
+                              { (yyval.expression) = isvoid((yyvsp[0].expression)); }
+#line 1872 "cool.tab.c"
     break;
 
   case 31:
-#line 227 "cool.y"
-                        { (yyval.expression) = plus((yyvsp[-2].expression),(yyvsp[0].expression)); }
-#line 1880 "cool.tab.c"
+#line 223 "cool.y"
+                                { (yyval.expression) = plus((yyvsp[-2].expression),(yyvsp[0].expression)); }
+#line 1878 "cool.tab.c"
     break;
 
   case 32:
-#line 228 "cool.y"
-                        { (yyval.expression) = sub((yyvsp[-2].expression),(yyvsp[0].expression)); }
-#line 1886 "cool.tab.c"
+#line 224 "cool.y"
+                                { (yyval.expression) = sub((yyvsp[-2].expression),(yyvsp[0].expression)); }
+#line 1884 "cool.tab.c"
     break;
 
   case 33:
-#line 229 "cool.y"
-                    { (yyval.expression) = mul((yyvsp[-2].expression), (yyvsp[0].expression)); }
-#line 1892 "cool.tab.c"
+#line 225 "cool.y"
+                                { (yyval.expression) = mul((yyvsp[-2].expression), (yyvsp[0].expression)); }
+#line 1890 "cool.tab.c"
     break;
 
   case 34:
-#line 230 "cool.y"
-                    { (yyval.expression) = divide((yyvsp[-2].expression), (yyvsp[0].expression)); }
-#line 1898 "cool.tab.c"
+#line 226 "cool.y"
+                                { (yyval.expression) = divide((yyvsp[-2].expression), (yyvsp[0].expression)); }
+#line 1896 "cool.tab.c"
     break;
 
   case 35:
-#line 231 "cool.y"
-                    { (yyval.expression) = neg((yyvsp[0].expression)); }
-#line 1904 "cool.tab.c"
+#line 227 "cool.y"
+                                { (yyval.expression) = neg((yyvsp[0].expression)); }
+#line 1902 "cool.tab.c"
     break;
 
   case 36:
-#line 232 "cool.y"
-                    { (yyval.expression) = lt((yyvsp[-2].expression), (yyvsp[0].expression)); }
-#line 1910 "cool.tab.c"
+#line 228 "cool.y"
+                                { (yyval.expression) = lt((yyvsp[-2].expression), (yyvsp[0].expression)); }
+#line 1908 "cool.tab.c"
     break;
 
   case 37:
-#line 233 "cool.y"
-                    { (yyval.expression) = leq((yyvsp[-2].expression), (yyvsp[0].expression)); }
-#line 1916 "cool.tab.c"
+#line 229 "cool.y"
+                                { (yyval.expression) = leq((yyvsp[-2].expression), (yyvsp[0].expression)); }
+#line 1914 "cool.tab.c"
     break;
 
   case 38:
-#line 234 "cool.y"
-                    { (yyval.expression) = eq((yyvsp[-2].expression), (yyvsp[0].expression)); }
-#line 1922 "cool.tab.c"
+#line 230 "cool.y"
+                                { (yyval.expression) = eq((yyvsp[-2].expression), (yyvsp[0].expression)); }
+#line 1920 "cool.tab.c"
     break;
 
   case 39:
-#line 235 "cool.y"
-                    { (yyval.expression) = comp((yyvsp[0].expression)); }
-#line 1928 "cool.tab.c"
+#line 231 "cool.y"
+                                { (yyval.expression) = comp((yyvsp[0].expression)); }
+#line 1926 "cool.tab.c"
     break;
 
   case 40:
-#line 237 "cool.y"
-               { (yyval.expression) = object((yyvsp[0].symbol)); }
-#line 1934 "cool.tab.c"
+#line 233 "cool.y"
+                           { (yyval.expression) = object((yyvsp[0].symbol)); }
+#line 1932 "cool.tab.c"
     break;
 
   case 41:
-#line 239 "cool.y"
-                   { (yyval.expression) = (yyvsp[-1].expression); }
-#line 1940 "cool.tab.c"
+#line 235 "cool.y"
+                               { (yyval.expression) = (yyvsp[-1].expression); }
+#line 1938 "cool.tab.c"
     break;
 
   case 42:
-#line 241 "cool.y"
-                { (yyval.expression) = int_const((yyvsp[0].symbol)); }
-#line 1946 "cool.tab.c"
+#line 237 "cool.y"
+                            { (yyval.expression) = int_const((yyvsp[0].symbol)); }
+#line 1944 "cool.tab.c"
     break;
 
   case 43:
-#line 242 "cool.y"
-                { (yyval.expression) = string_const((yyvsp[0].symbol)); }
-#line 1952 "cool.tab.c"
+#line 238 "cool.y"
+                            { (yyval.expression) = string_const((yyvsp[0].symbol)); }
+#line 1950 "cool.tab.c"
     break;
 
   case 44:
-#line 243 "cool.y"
-                 { (yyval.expression) = bool_const((yyvsp[0].boolean)); }
-#line 1958 "cool.tab.c"
+#line 239 "cool.y"
+                             { (yyval.expression) = bool_const((yyvsp[0].boolean)); }
+#line 1956 "cool.tab.c"
     break;
 
   case 45:
-#line 249 "cool.y"
-    { (yyval.expression) = let((yyvsp[-6].symbol), (yyvsp[-4].symbol), (yyvsp[-2].expression), (yyvsp[0].expression)); }
-#line 1964 "cool.tab.c"
+#line 245 "cool.y"
+                { (yyval.expression) = let((yyvsp[-6].symbol), (yyvsp[-4].symbol), (yyvsp[-2].expression), (yyvsp[0].expression)); }
+#line 1962 "cool.tab.c"
     break;
 
   case 46:
-#line 252 "cool.y"
-    { (yyval.expression) = let((yyvsp[-4].symbol), (yyvsp[-2].symbol), no_expr(), (yyvsp[0].expression)); }
-#line 1970 "cool.tab.c"
+#line 248 "cool.y"
+                { (yyval.expression) = let((yyvsp[-4].symbol), (yyvsp[-2].symbol), no_expr(), (yyvsp[0].expression)); }
+#line 1968 "cool.tab.c"
     break;
 
   case 47:
-#line 255 "cool.y"
-    { (yyval.expression) = let((yyvsp[-6].symbol), (yyvsp[-4].symbol), (yyvsp[-2].expression), (yyvsp[0].expression)); }
-#line 1976 "cool.tab.c"
+#line 251 "cool.y"
+                { (yyval.expression) = let((yyvsp[-6].symbol), (yyvsp[-4].symbol), (yyvsp[-2].expression), (yyvsp[0].expression)); }
+#line 1974 "cool.tab.c"
     break;
 
   case 48:
-#line 258 "cool.y"
-    { (yyval.expression) = let((yyvsp[-4].symbol), (yyvsp[-2].symbol), no_expr(), (yyvsp[0].expression)); }
-#line 1982 "cool.tab.c"
+#line 254 "cool.y"
+                { (yyval.expression) = let((yyvsp[-4].symbol), (yyvsp[-2].symbol), no_expr(), (yyvsp[0].expression)); }
+#line 1980 "cool.tab.c"
     break;
 
   case 49:
-#line 260 "cool.y"
-                    { }
-#line 1988 "cool.tab.c"
+#line 256 "cool.y"
+                                { }
+#line 1986 "cool.tab.c"
     break;
 
   case 50:
-#line 261 "cool.y"
-                         { }
-#line 1994 "cool.tab.c"
+#line 257 "cool.y"
+                                     { }
+#line 1992 "cool.tab.c"
     break;
 
   case 51:
-#line 265 "cool.y"
-         { (yyval.expressions) = single_Expressions((yyvsp[0].expression)); }
-#line 2000 "cool.tab.c"
+#line 261 "cool.y"
+                     { (yyval.expressions) = single_Expressions((yyvsp[0].expression)); }
+#line 1998 "cool.tab.c"
     break;
 
   case 52:
-#line 266 "cool.y"
-                          { (yyval.expressions) = append_Expressions((yyvsp[-2].expressions), single_Expressions((yyvsp[0].expression))); }
-#line 2006 "cool.tab.c"
+#line 262 "cool.y"
+                                      { (yyval.expressions) = append_Expressions((yyvsp[-2].expressions), single_Expressions((yyvsp[0].expression))); }
+#line 2004 "cool.tab.c"
     break;
 
   case 53:
-#line 267 "cool.y"
-      { (yyval.expressions) = nil_Expressions(); }
-#line 2012 "cool.tab.c"
+#line 263 "cool.y"
+                  { (yyval.expressions) = nil_Expressions(); }
+#line 2010 "cool.tab.c"
     break;
 
   case 54:
-#line 272 "cool.y"
-    { (yyval.cases) = single_Cases(branch((yyvsp[-5].symbol), (yyvsp[-3].symbol), (yyvsp[-1].expression))); }
-#line 2018 "cool.tab.c"
+#line 268 "cool.y"
+                { (yyval.cases) = single_Cases(branch((yyvsp[-5].symbol), (yyvsp[-3].symbol), (yyvsp[-1].expression))); }
+#line 2016 "cool.tab.c"
     break;
 
   case 55:
-#line 274 "cool.y"
-    { (yyval.cases) = append_Cases((yyvsp[-6].cases), single_Cases(branch((yyvsp[-5].symbol), (yyvsp[-3].symbol), (yyvsp[-1].expression)))); }
-#line 2024 "cool.tab.c"
+#line 270 "cool.y"
+                { (yyval.cases) = append_Cases((yyvsp[-6].cases), single_Cases(branch((yyvsp[-5].symbol), (yyvsp[-3].symbol), (yyvsp[-1].expression)))); }
+#line 2022 "cool.tab.c"
     break;
 
   case 56:
-#line 275 "cool.y"
-      { (yyval.cases) = nil_Cases(); }
-#line 2030 "cool.tab.c"
+#line 271 "cool.y"
+                  { (yyval.cases) = nil_Cases(); }
+#line 2028 "cool.tab.c"
     break;
 
   case 57:
-#line 280 "cool.y"
-             { (yyval.expressions) = single_Expressions((yyvsp[-1].expression)); }
-#line 2036 "cool.tab.c"
+#line 276 "cool.y"
+                         { (yyval.expressions) = single_Expressions((yyvsp[-1].expression)); }
+#line 2034 "cool.tab.c"
     break;
 
   case 58:
-#line 281 "cool.y"
-                         { (yyval.expressions) = append_Expressions((yyvsp[-2].expressions), single_Expressions((yyvsp[-1].expression))); }
-#line 2042 "cool.tab.c"
+#line 277 "cool.y"
+                                     { (yyval.expressions) = append_Expressions((yyvsp[-2].expressions), single_Expressions((yyvsp[-1].expression))); }
+#line 2040 "cool.tab.c"
     break;
 
   case 59:
-#line 282 "cool.y"
-                { }
-#line 2048 "cool.tab.c"
+#line 278 "cool.y"
+                            { }
+#line 2046 "cool.tab.c"
     break;
 
 
-#line 2052 "cool.tab.c"
+#line 2050 "cool.tab.c"
 
       default: break;
     }
@@ -2286,7 +2284,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 287 "cool.y"
+#line 283 "cool.y"
 
     
     /* This function is called automatically when Bison detects a parse error. */
