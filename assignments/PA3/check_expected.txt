@@ -5,15 +5,21 @@
 "bad.cl", line 23: syntax error at or near ','
 "bad.cl", line 24: syntax error at or near ';'
 "bad.cl", line 25: syntax error at or near ','
-"bad.cl", line 30: syntax error at or near TYPEID = Y
-"bad.cl", line 31: syntax error at or near OBJECTID = int
-"bad.cl", line 33: syntax error at or near '}'
-"bad.cl", line 39: syntax error at or near LOOP
-"bad.cl", line 50: syntax error at or near ';'
-"bad.cl", line 51: syntax error at or near OBJECTID = a
-"bad.cl", line 52: syntax error at or near OBJECTID = b
-"bad.cl", line 53: syntax error at or near TYPEID = A
-"bad.cl", line 57: syntax error at or near LET
-"bad.cl", line 62: syntax error at or near '+'
-"bad.cl", line 65: syntax error at or near OBJECTID = obj
+"bad.cl", line 26: syntax error at or near '}'
+"bad.cl", line 27: syntax error at or near '.'
+"bad.cl", line 32: syntax error at or near TYPEID = Y
+"bad.cl", line 33: syntax error at or near OBJECTID = int
+"bad.cl", line 35: syntax error at or near '}'
+"bad.cl", line 41: syntax error at or near '{'
+"bad.cl", line 46: syntax error at or near LE
+"bad.cl", line 50: syntax error at or near LOOP
+"bad.cl", line 51: syntax error at or near INT_CONST = 1
+"bad.cl", line 52: syntax error at or near POOL
+"bad.cl", line 56: syntax error at or near '}'
+"bad.cl", line 61: syntax error at or near ';'
+"bad.cl", line 62: syntax error at or near OBJECTID = a
+"bad.cl", line 63: syntax error at or near OBJECTID = b
+"bad.cl", line 64: syntax error at or near TYPEID = A
+"bad.cl", line 68: syntax error at or near '+'
+"bad.cl", line 71: syntax error at or near OBJECTID = obj
 Compilation halted due to lex and parse errors

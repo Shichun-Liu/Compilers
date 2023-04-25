@@ -18,12 +18,14 @@ class D inherts A {
 class E inherits A {
 ;
 
-class Dispatch {
-	test(x:Int):String {x(5,4,3,)};
-	test(x:Int):String {x(,5,4,)};
-	test(x:Int):String {x(4;3;)};
-	test(x:Int):String {x(,)};
-	ok(x:Int):String {x(5,4,3)};
+class FeatureList {
+	f(x : Int) : Int { x(5,4,3,) };
+	f(x : Int) : Int { x(,5,4,) };
+	f(x : Int) : Int { x(4;3;) };
+	f(x : Int) : Int { x(,) };
+	f(x : Int) : Int { };
+	f(x : Int) : Int { x@.f(2) };
+	
 };
 
 class BadFeatureName {
@@ -40,17 +42,18 @@ class {
 	a : Int;
 };
 
-class LE {
-	f():Int {x<=y<=z};
+class BadLE {
+	f() : Int { x<=y<=z };
 };
 
-class Loop {
-	f() : Int {{
-		while 1 loop 1 loop;
-		while 1 pool 1 pool;
-	}};
+class BadLoop {
+	f() : Int { while 1 loop 1 loop };
+	f() : Int { while 1 1 loop };
+	f() : Int { while 1 pool 1 pool };
+};
 
-	g() : Int {while 1 1 loop};
+class BadIf {
+	f() : Int { if 1 then 0  };
 };
 
 class TypeError {
@@ -61,10 +64,6 @@ class TypeError {
 	z(a : Int) : Int {a <- A};
 };
 
-class Let {
-	f() : Int { let x : Int <- 1, b : Int <- B in a + B };
-};
-
 class BadExpr {
 	f(a : Int) : Int {a++};
 };
@@ -72,6 +71,3 @@ class BadExpr {
 class InheritFromObject inherits obj {
 	a : Int;
 };
-
-
-
