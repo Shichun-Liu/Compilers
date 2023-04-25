@@ -23,7 +23,16 @@ Class C inherits a {
 Class D inherts A {
 };
 
+
+Class Main inherits IO {
+	a : Int;
+
+	main() : Object {{
+		a <- 2 / 0;
+	}};
+
+};
+
 (* error:  closing brace is missing *)
 Class E inherits A {
 ;
-
