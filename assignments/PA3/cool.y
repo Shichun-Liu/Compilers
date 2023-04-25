@@ -143,9 +143,7 @@
     %type <expressions> exp_list
     %type <expressions> formal_exp_list
     %type <expression> exp
-    /* let is a liitle difficult so I spilt it out from the exp */
     %type <expression> let
-    %type <expression> let_line
 
 
 
@@ -170,21 +168,16 @@
     
     /* class */
     class_list
-    : class		
-    { $$ = single_Classes($1);
-    parse_results = $$; }
-    | class_list class	
-    { $$ = append_Classes($1,single_Classes($2)); 
-    parse_results = $$; }
-    | error ';' class_list
-    { $$ = $3; }
+    : class { $$ = single_Classes($1); parse_results = $$; }
+    | class_list class	{ $$ = append_Classes($1,single_Classes($2)); parse_results = $$; }
+    | error ';' class_list { $$ = $3; }
     ;
     
     class
-    : CLASS TYPEID '{' feature_list '}' ';'
-    { $$ = class_($2,idtable.add_string("Object"),$4, stringtable.add_string(curr_filename)); }
+    : CLASS TYPEID '{' feature_list '}' ';' 
+		{ $$ = class_($2,idtable.add_string("Object"),$4, stringtable.add_string(curr_filename)); }
     | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';'
-    { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
+    	{ $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
     ;
     
     /* feature */
@@ -209,8 +202,8 @@
 	;
 
 	feature_line
-	: {SET_NODELOC(0); $$ = no_expr();}
-	| ASSIGN exp {$$ = $2;}
+	: { SET_NODELOC(0); $$ = no_expr(); }
+	| ASSIGN exp { $$ = $2; }
 	;
 
     /* formal */
@@ -251,24 +244,18 @@
     { $$ = append_Expressions($1, single_Expressions($3)); }
 
     let
-    : OBJECTID ':' TYPEID IN exp
-    { SET_NODELOC(0); $$ = let($1, $3, no_expr(), $5); }
-    | OBJECTID ':' TYPEID ASSIGN exp IN exp
-    { $$ = let($1, $3, $5, $7); }
-    | OBJECTID ':' TYPEID ',' let
-    { SET_NODELOC(0); $$ = let($1, $3, no_expr(), $5); }
-    | OBJECTID ':' TYPEID ASSIGN exp ',' let
-    { $$ = let($1, $3, $5, $7); }
+    : OBJECTID ':' TYPEID feature_line IN exp
+    { $$ = let($1, $3, $4, $6); }
+    | OBJECTID ':' TYPEID feature_line ',' let
+    { $$ = let($1, $3, $4, $6); }
     | error ',' let
     { $$ = $3; }
 	
-	/* 
-	let_line
-	: IN exp { SET_NODELOC(0); $$ = no_expr(); }
-	| ASSIGN exp IN exp { $$ = $2; }
-	| ',' let { SET_NODELOC(0); $$ = no_expr(); }
-	| ASSIGN exp ',' let { $$ = $2; } 
-	*/
+	
+	feature_line
+	:  { SET_NODELOC(0); $$ = no_expr(); }
+	|  ASSIGN exp  { $$ = $2; }
+	;
 
     exp
     : OBJECTID ASSIGN exp

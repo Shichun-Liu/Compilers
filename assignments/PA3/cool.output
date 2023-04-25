@@ -1,6 +1,17 @@
+Nonterminals useless in grammar
+
+    let_line
+
+
 Terminals unused in grammar
 
     ERROR
+
+
+Rules useless in parser due to conflicts
+
+   30 feature_line: %empty
+   31             | ASSIGN exp
 
 
 State 10 conflicts: 1 shift/reduce
@@ -8,9 +19,11 @@ State 12 conflicts: 1 shift/reduce
 State 18 conflicts: 1 shift/reduce
 State 19 conflicts: 1 shift/reduce
 State 25 conflicts: 1 shift/reduce
+State 30 conflicts: 1 reduce/reduce
+State 58 conflicts: 3 reduce/reduce
+State 116 conflicts: 2 reduce/reduce
 State 123 conflicts: 14 shift/reduce
-State 143 conflicts: 9 shift/reduce
-State 155 conflicts: 9 shift/reduce
+State 147 conflicts: 9 shift/reduce
 
 
 Grammar
@@ -55,11 +68,12 @@ Grammar
    25 formal_exp_list: exp
    26                | formal_exp_list ',' exp
 
-   27 let: OBJECTID ':' TYPEID IN exp
-   28    | OBJECTID ':' TYPEID ASSIGN exp IN exp
-   29    | OBJECTID ':' TYPEID ',' let
-   30    | OBJECTID ':' TYPEID ASSIGN exp ',' let
-   31    | error ',' let
+   27 let: OBJECTID ':' TYPEID feature_line IN exp
+   28    | OBJECTID ':' TYPEID feature_line ',' let
+   29    | error ',' let
+
+   30 feature_line: %empty
+   31             | ASSIGN exp
 
    32 exp: OBJECTID ASSIGN exp
    33    | exp '.' OBJECTID '(' formal_exp_list ')'
@@ -98,11 +112,11 @@ Terminals, with rules where they appear
     ')' (41) 11 12 33 34 35 36 37 38 55
     '*' (42) 48
     '+' (43) 46
-    ',' (44) 17 26 29 30 31
+    ',' (44) 17 26 28 29
     '-' (45) 47
     '.' (46) 33 34 35 36
     '/' (47) 49
-    ':' (58) 11 12 13 18 21 27 28 29 30
+    ':' (58) 11 12 13 18 21 27 28
     ';' (59) 4 5 6 10 11 12 13 21 22 23 24
     '<' (60) 51
     '=' (61) 52
@@ -110,12 +124,12 @@ Terminals, with rules where they appear
     '{' (123) 5 6 11 12 41
     '}' (125) 5 6 11 12 41
     '~' (126) 50
-    error (256) 4 10 24 31
+    error (256) 4 10 24 29
     CLASS (258) 5 6
     ELSE (259) 39
     FI (260) 39
     IF (261) 39
-    IN (262) 27 28
+    IN (262) 27
     INHERITS (263) 6
     LET (264) 42
     LOOP (265) 40
@@ -131,9 +145,9 @@ Terminals, with rules where they appear
     STR_CONST <symbol> (275) 58
     INT_CONST <symbol> (276) 57
     BOOL_CONST <boolean> (277) 59
-    TYPEID <symbol> (278) 5 6 11 12 13 18 21 27 28 29 30 35 36 44
-    OBJECTID <symbol> (279) 11 12 13 18 21 27 28 29 30 32 33 34 35 36 37 38 56
-    ASSIGN (280) 15 28 30 32
+    TYPEID <symbol> (278) 5 6 11 12 13 18 21 27 28 35 36 44
+    OBJECTID <symbol> (279) 11 12 13 18 21 27 28 32 33 34 35 36 37 38 56
+    ASSIGN (280) 15 31 32
     NOT (281) 54
     LE (282) 53
     ERROR (283)
@@ -159,8 +173,8 @@ Nonterminals, with rules where they appear
         on left: 11 12 13
         on right: 8 9
     feature_line <expression> (51)
-        on left: 14 15
-        on right: 13
+        on left: 14 15 30 31
+        on right: 13 27 28
     formal_list <formals> (52)
         on left: 16 17
         on right: 11 17
@@ -180,11 +194,11 @@ Nonterminals, with rules where they appear
         on left: 25 26
         on right: 26 33 35 37
     let <expression> (58)
-        on left: 27 28 29 30 31
-        on right: 29 30 31 42
+        on left: 27 28 29
+        on right: 28 29 42
     exp <expression> (59)
         on left: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59
-        on right: 11 12 15 21 22 23 25 26 27 28 30 32 33 34 35 36 39 40 43 45 46 47 48 49 50 51 52 53 54 55
+        on right: 11 12 15 21 22 23 25 26 27 31 32 33 34 35 36 39 40 43 45 46 47 48 49 50 51 52 53 54 55
 
 
 State 0
@@ -471,6 +485,8 @@ State 30
 
     ASSIGN  shift, and go to state 37
 
+    ';'       reduce using rule 14 (feature_line)
+    ';'       [reduce using rule 30 (feature_line)]
     $default  reduce using rule 14 (feature_line)
 
     feature_line  go to state 38
@@ -523,6 +539,7 @@ State 36
 State 37
 
    15 feature_line: ASSIGN . exp
+   31             | ASSIGN . exp
 
     IF          shift, and go to state 44
     LET         shift, and go to state 45
@@ -816,6 +833,7 @@ State 57
 State 58
 
    15 feature_line: ASSIGN exp .
+   31             | ASSIGN exp .
    33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
    34    | exp . '.' OBJECTID '(' ')'
    35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
@@ -838,6 +856,12 @@ State 58
     '@'  shift, and go to state 85
     '.'  shift, and go to state 86
 
+    IN        reduce using rule 15 (feature_line)
+    IN        [reduce using rule 31 (feature_line)]
+    ';'       reduce using rule 15 (feature_line)
+    ';'       [reduce using rule 31 (feature_line)]
+    ','       reduce using rule 15 (feature_line)
+    ','       [reduce using rule 31 (feature_line)]
     $default  reduce using rule 15 (feature_line)
 
 
@@ -906,17 +930,15 @@ State 62
 
 State 63
 
-   31 let: error . ',' let
+   29 let: error . ',' let
 
     ','  shift, and go to state 90
 
 
 State 64
 
-   27 let: OBJECTID . ':' TYPEID IN exp
-   28    | OBJECTID . ':' TYPEID ASSIGN exp IN exp
-   29    | OBJECTID . ':' TYPEID ',' let
-   30    | OBJECTID . ':' TYPEID ASSIGN exp ',' let
+   27 let: OBJECTID . ':' TYPEID feature_line IN exp
+   28    | OBJECTID . ':' TYPEID feature_line ',' let
 
     ':'  shift, and go to state 91
 
@@ -1434,7 +1456,7 @@ State 89
 
 State 90
 
-   31 let: error ',' . let
+   29 let: error ',' . let
 
     error     shift, and go to state 63
     OBJECTID  shift, and go to state 64
@@ -1444,10 +1466,8 @@ State 90
 
 State 91
 
-   27 let: OBJECTID ':' . TYPEID IN exp
-   28    | OBJECTID ':' . TYPEID ASSIGN exp IN exp
-   29    | OBJECTID ':' . TYPEID ',' let
-   30    | OBJECTID ':' . TYPEID ASSIGN exp ',' let
+   27 let: OBJECTID ':' . TYPEID feature_line IN exp
+   28    | OBJECTID ':' . TYPEID feature_line ',' let
 
     TYPEID  shift, and go to state 116
 
@@ -1882,21 +1902,25 @@ State 114
 
 State 115
 
-   31 let: error ',' let .
+   29 let: error ',' let .
 
-    $default  reduce using rule 31 (let)
+    $default  reduce using rule 29 (let)
 
 
 State 116
 
-   27 let: OBJECTID ':' TYPEID . IN exp
-   28    | OBJECTID ':' TYPEID . ASSIGN exp IN exp
-   29    | OBJECTID ':' TYPEID . ',' let
-   30    | OBJECTID ':' TYPEID . ASSIGN exp ',' let
+   27 let: OBJECTID ':' TYPEID . feature_line IN exp
+   28    | OBJECTID ':' TYPEID . feature_line ',' let
 
-    IN      shift, and go to state 130
-    ASSIGN  shift, and go to state 131
-    ','     shift, and go to state 132
+    ASSIGN  shift, and go to state 37
+
+    IN        reduce using rule 14 (feature_line)
+    IN        [reduce using rule 30 (feature_line)]
+    ','       reduce using rule 14 (feature_line)
+    ','       [reduce using rule 30 (feature_line)]
+    $default  reduce using rule 14 (feature_line)
+
+    feature_line  go to state 130
 
 
 State 117
@@ -1914,7 +1938,7 @@ State 117
    52    | exp . '=' exp
    53    | exp . LE exp
 
-    POOL  shift, and go to state 133
+    POOL  shift, and go to state 131
     LE    shift, and go to state 78
     '<'   shift, and go to state 79
     '='   shift, and go to state 80
@@ -1930,7 +1954,7 @@ State 118
 
    21 branch: OBJECTID . ':' TYPEID DARROW exp ';'
 
-    ':'  shift, and go to state 134
+    ':'  shift, and go to state 132
 
 
 State 119
@@ -1938,10 +1962,10 @@ State 119
    20 branch_list: branch_list . branch
    43 exp: CASE exp OF branch_list . ESAC
 
-    ESAC      shift, and go to state 135
+    ESAC      shift, and go to state 133
     OBJECTID  shift, and go to state 118
 
-    branch  go to state 136
+    branch  go to state 134
 
 
 State 120
@@ -1977,7 +2001,7 @@ State 122
     '{'         shift, and go to state 56
     '('         shift, and go to state 57
 
-    exp  go to state 137
+    exp  go to state 135
 
 
 State 123
@@ -2031,7 +2055,7 @@ State 125
    35 exp: exp '@' TYPEID '.' . OBJECTID '(' formal_exp_list ')'
    36    | exp '@' TYPEID '.' . OBJECTID '(' ')'
 
-    OBJECTID  shift, and go to state 138
+    OBJECTID  shift, and go to state 136
 
 
 State 126
@@ -2053,9 +2077,9 @@ State 126
     '~'         shift, and go to state 55
     '{'         shift, and go to state 56
     '('         shift, and go to state 57
-    ')'         shift, and go to state 139
+    ')'         shift, and go to state 137
 
-    formal_exp_list  go to state 140
+    formal_exp_list  go to state 138
     exp              go to state 97
 
 
@@ -2070,7 +2094,7 @@ State 128
 
    11 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' . ';'
 
-    ';'  shift, and go to state 141
+    ';'  shift, and go to state 139
 
 
 State 129
@@ -2092,93 +2116,47 @@ State 129
     '{'         shift, and go to state 56
     '('         shift, and go to state 57
 
-    exp  go to state 142
+    exp  go to state 140
 
 
 State 130
 
-   27 let: OBJECTID ':' TYPEID IN . exp
+   27 let: OBJECTID ':' TYPEID feature_line . IN exp
+   28    | OBJECTID ':' TYPEID feature_line . ',' let
 
-    IF          shift, and go to state 44
-    LET         shift, and go to state 45
-    WHILE       shift, and go to state 46
-    CASE        shift, and go to state 47
-    NEW         shift, and go to state 48
-    ISVOID      shift, and go to state 49
-    STR_CONST   shift, and go to state 50
-    INT_CONST   shift, and go to state 51
-    BOOL_CONST  shift, and go to state 52
-    OBJECTID    shift, and go to state 53
-    NOT         shift, and go to state 54
-    '~'         shift, and go to state 55
-    '{'         shift, and go to state 56
-    '('         shift, and go to state 57
-
-    exp  go to state 143
+    IN   shift, and go to state 141
+    ','  shift, and go to state 142
 
 
 State 131
-
-   28 let: OBJECTID ':' TYPEID ASSIGN . exp IN exp
-   30    | OBJECTID ':' TYPEID ASSIGN . exp ',' let
-
-    IF          shift, and go to state 44
-    LET         shift, and go to state 45
-    WHILE       shift, and go to state 46
-    CASE        shift, and go to state 47
-    NEW         shift, and go to state 48
-    ISVOID      shift, and go to state 49
-    STR_CONST   shift, and go to state 50
-    INT_CONST   shift, and go to state 51
-    BOOL_CONST  shift, and go to state 52
-    OBJECTID    shift, and go to state 53
-    NOT         shift, and go to state 54
-    '~'         shift, and go to state 55
-    '{'         shift, and go to state 56
-    '('         shift, and go to state 57
-
-    exp  go to state 144
-
-
-State 132
-
-   29 let: OBJECTID ':' TYPEID ',' . let
-
-    error     shift, and go to state 63
-    OBJECTID  shift, and go to state 64
-
-    let  go to state 145
-
-
-State 133
 
    40 exp: WHILE exp LOOP exp POOL .
 
     $default  reduce using rule 40 (exp)
 
 
-State 134
+State 132
 
    21 branch: OBJECTID ':' . TYPEID DARROW exp ';'
 
-    TYPEID  shift, and go to state 146
+    TYPEID  shift, and go to state 143
 
 
-State 135
+State 133
 
    43 exp: CASE exp OF branch_list ESAC .
 
     $default  reduce using rule 43 (exp)
 
 
-State 136
+State 134
 
    20 branch_list: branch_list branch .
 
     $default  reduce using rule 20 (branch_list)
 
 
-State 137
+State 135
 
    26 formal_exp_list: formal_exp_list ',' exp .
    33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
@@ -2206,38 +2184,38 @@ State 137
     $default  reduce using rule 26 (formal_exp_list)
 
 
-State 138
+State 136
 
    35 exp: exp '@' TYPEID '.' OBJECTID . '(' formal_exp_list ')'
    36    | exp '@' TYPEID '.' OBJECTID . '(' ')'
 
-    '('  shift, and go to state 147
+    '('  shift, and go to state 144
 
 
-State 139
+State 137
 
    34 exp: exp '.' OBJECTID '(' ')' .
 
     $default  reduce using rule 34 (exp)
 
 
-State 140
+State 138
 
    26 formal_exp_list: formal_exp_list . ',' exp
    33 exp: exp '.' OBJECTID '(' formal_exp_list . ')'
 
-    ')'  shift, and go to state 148
+    ')'  shift, and go to state 145
     ','  shift, and go to state 122
 
 
-State 141
+State 139
 
    11 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' ';' .
 
     $default  reduce using rule 11 (feature)
 
 
-State 142
+State 140
 
    33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
    34    | exp . '.' OBJECTID '(' ')'
@@ -2252,7 +2230,7 @@ State 142
    52    | exp . '=' exp
    53    | exp . LE exp
 
-    FI   shift, and go to state 149
+    FI   shift, and go to state 146
     LE   shift, and go to state 78
     '<'  shift, and go to state 79
     '='  shift, and go to state 80
@@ -2264,9 +2242,87 @@ State 142
     '.'  shift, and go to state 86
 
 
+State 141
+
+   27 let: OBJECTID ':' TYPEID feature_line IN . exp
+
+    IF          shift, and go to state 44
+    LET         shift, and go to state 45
+    WHILE       shift, and go to state 46
+    CASE        shift, and go to state 47
+    NEW         shift, and go to state 48
+    ISVOID      shift, and go to state 49
+    STR_CONST   shift, and go to state 50
+    INT_CONST   shift, and go to state 51
+    BOOL_CONST  shift, and go to state 52
+    OBJECTID    shift, and go to state 53
+    NOT         shift, and go to state 54
+    '~'         shift, and go to state 55
+    '{'         shift, and go to state 56
+    '('         shift, and go to state 57
+
+    exp  go to state 147
+
+
+State 142
+
+   28 let: OBJECTID ':' TYPEID feature_line ',' . let
+
+    error     shift, and go to state 63
+    OBJECTID  shift, and go to state 64
+
+    let  go to state 148
+
+
 State 143
 
-   27 let: OBJECTID ':' TYPEID IN exp .
+   21 branch: OBJECTID ':' TYPEID . DARROW exp ';'
+
+    DARROW  shift, and go to state 149
+
+
+State 144
+
+   35 exp: exp '@' TYPEID '.' OBJECTID '(' . formal_exp_list ')'
+   36    | exp '@' TYPEID '.' OBJECTID '(' . ')'
+
+    IF          shift, and go to state 44
+    LET         shift, and go to state 45
+    WHILE       shift, and go to state 46
+    CASE        shift, and go to state 47
+    NEW         shift, and go to state 48
+    ISVOID      shift, and go to state 49
+    STR_CONST   shift, and go to state 50
+    INT_CONST   shift, and go to state 51
+    BOOL_CONST  shift, and go to state 52
+    OBJECTID    shift, and go to state 53
+    NOT         shift, and go to state 54
+    '~'         shift, and go to state 55
+    '{'         shift, and go to state 56
+    '('         shift, and go to state 57
+    ')'         shift, and go to state 150
+
+    formal_exp_list  go to state 151
+    exp              go to state 97
+
+
+State 145
+
+   33 exp: exp '.' OBJECTID '(' formal_exp_list ')' .
+
+    $default  reduce using rule 33 (exp)
+
+
+State 146
+
+   39 exp: IF exp THEN exp ELSE exp FI .
+
+    $default  reduce using rule 39 (exp)
+
+
+State 147
+
+   27 let: OBJECTID ':' TYPEID feature_line IN exp .
    33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
    34    | exp . '.' OBJECTID '(' ')'
    35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
@@ -2301,121 +2357,14 @@ State 143
     $default  reduce using rule 27 (let)
 
 
-State 144
-
-   28 let: OBJECTID ':' TYPEID ASSIGN exp . IN exp
-   30    | OBJECTID ':' TYPEID ASSIGN exp . ',' let
-   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
-   34    | exp . '.' OBJECTID '(' ')'
-   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
-   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
-   46    | exp . '+' exp
-   47    | exp . '-' exp
-   48    | exp . '*' exp
-   49    | exp . '/' exp
-   51    | exp . '<' exp
-   52    | exp . '=' exp
-   53    | exp . LE exp
-
-    IN   shift, and go to state 150
-    LE   shift, and go to state 78
-    '<'  shift, and go to state 79
-    '='  shift, and go to state 80
-    '+'  shift, and go to state 81
-    '-'  shift, and go to state 82
-    '*'  shift, and go to state 83
-    '/'  shift, and go to state 84
-    '@'  shift, and go to state 85
-    '.'  shift, and go to state 86
-    ','  shift, and go to state 151
-
-
-State 145
-
-   29 let: OBJECTID ':' TYPEID ',' let .
-
-    $default  reduce using rule 29 (let)
-
-
-State 146
-
-   21 branch: OBJECTID ':' TYPEID . DARROW exp ';'
-
-    DARROW  shift, and go to state 152
-
-
-State 147
-
-   35 exp: exp '@' TYPEID '.' OBJECTID '(' . formal_exp_list ')'
-   36    | exp '@' TYPEID '.' OBJECTID '(' . ')'
-
-    IF          shift, and go to state 44
-    LET         shift, and go to state 45
-    WHILE       shift, and go to state 46
-    CASE        shift, and go to state 47
-    NEW         shift, and go to state 48
-    ISVOID      shift, and go to state 49
-    STR_CONST   shift, and go to state 50
-    INT_CONST   shift, and go to state 51
-    BOOL_CONST  shift, and go to state 52
-    OBJECTID    shift, and go to state 53
-    NOT         shift, and go to state 54
-    '~'         shift, and go to state 55
-    '{'         shift, and go to state 56
-    '('         shift, and go to state 57
-    ')'         shift, and go to state 153
-
-    formal_exp_list  go to state 154
-    exp              go to state 97
-
-
 State 148
 
-   33 exp: exp '.' OBJECTID '(' formal_exp_list ')' .
+   28 let: OBJECTID ':' TYPEID feature_line ',' let .
 
-    $default  reduce using rule 33 (exp)
+    $default  reduce using rule 28 (let)
 
 
 State 149
-
-   39 exp: IF exp THEN exp ELSE exp FI .
-
-    $default  reduce using rule 39 (exp)
-
-
-State 150
-
-   28 let: OBJECTID ':' TYPEID ASSIGN exp IN . exp
-
-    IF          shift, and go to state 44
-    LET         shift, and go to state 45
-    WHILE       shift, and go to state 46
-    CASE        shift, and go to state 47
-    NEW         shift, and go to state 48
-    ISVOID      shift, and go to state 49
-    STR_CONST   shift, and go to state 50
-    INT_CONST   shift, and go to state 51
-    BOOL_CONST  shift, and go to state 52
-    OBJECTID    shift, and go to state 53
-    NOT         shift, and go to state 54
-    '~'         shift, and go to state 55
-    '{'         shift, and go to state 56
-    '('         shift, and go to state 57
-
-    exp  go to state 155
-
-
-State 151
-
-   30 let: OBJECTID ':' TYPEID ASSIGN exp ',' . let
-
-    error     shift, and go to state 63
-    OBJECTID  shift, and go to state 64
-
-    let  go to state 156
-
-
-State 152
 
    21 branch: OBJECTID ':' TYPEID DARROW . exp ';'
 
@@ -2434,70 +2383,26 @@ State 152
     '{'         shift, and go to state 56
     '('         shift, and go to state 57
 
-    exp  go to state 157
+    exp  go to state 152
 
 
-State 153
+State 150
 
    36 exp: exp '@' TYPEID '.' OBJECTID '(' ')' .
 
     $default  reduce using rule 36 (exp)
 
 
-State 154
+State 151
 
    26 formal_exp_list: formal_exp_list . ',' exp
    35 exp: exp '@' TYPEID '.' OBJECTID '(' formal_exp_list . ')'
 
-    ')'  shift, and go to state 158
+    ')'  shift, and go to state 153
     ','  shift, and go to state 122
 
 
-State 155
-
-   28 let: OBJECTID ':' TYPEID ASSIGN exp IN exp .
-   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
-   34    | exp . '.' OBJECTID '(' ')'
-   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
-   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
-   46    | exp . '+' exp
-   47    | exp . '-' exp
-   48    | exp . '*' exp
-   49    | exp . '/' exp
-   51    | exp . '<' exp
-   52    | exp . '=' exp
-   53    | exp . LE exp
-
-    LE   shift, and go to state 78
-    '<'  shift, and go to state 79
-    '='  shift, and go to state 80
-    '+'  shift, and go to state 81
-    '-'  shift, and go to state 82
-    '*'  shift, and go to state 83
-    '/'  shift, and go to state 84
-    '@'  shift, and go to state 85
-    '.'  shift, and go to state 86
-
-    LE        [reduce using rule 28 (let)]
-    '<'       [reduce using rule 28 (let)]
-    '='       [reduce using rule 28 (let)]
-    '+'       [reduce using rule 28 (let)]
-    '-'       [reduce using rule 28 (let)]
-    '*'       [reduce using rule 28 (let)]
-    '/'       [reduce using rule 28 (let)]
-    '@'       [reduce using rule 28 (let)]
-    '.'       [reduce using rule 28 (let)]
-    $default  reduce using rule 28 (let)
-
-
-State 156
-
-   30 let: OBJECTID ':' TYPEID ASSIGN exp ',' let .
-
-    $default  reduce using rule 30 (let)
-
-
-State 157
+State 152
 
    21 branch: OBJECTID ':' TYPEID DARROW exp . ';'
    33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
@@ -2521,17 +2426,17 @@ State 157
     '/'  shift, and go to state 84
     '@'  shift, and go to state 85
     '.'  shift, and go to state 86
-    ';'  shift, and go to state 159
+    ';'  shift, and go to state 154
 
 
-State 158
+State 153
 
    35 exp: exp '@' TYPEID '.' OBJECTID '(' formal_exp_list ')' .
 
     $default  reduce using rule 35 (exp)
 
 
-State 159
+State 154
 
    21 branch: OBJECTID ':' TYPEID DARROW exp ';' .
 

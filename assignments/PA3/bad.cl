@@ -1,38 +1,46 @@
-
-(*
- *  execute "coolc bad.cl" to see the error messages that the coolc parser
- *  generates
- *
- *  execute "myparser bad.cl" to see the error messages that your parser
- *  generates
- *)
-
 (* no error *)
 class A {
 };
 
 (* error:  b is not a type identifier *)
-Class b inherits A {
+class b inherits A {
 };
 
 (* error:  a is not a type identifier *)
-Class C inherits a {
+class C inherits a {
 };
 
 (* error:  keyword inherits is misspelled *)
-Class D inherts A {
-};
-
-
-Class Main inherits IO {
-	a : Int;
-
-	main() : Object {{
-		a <- 2 / 0;
-	}};
-
+class D inherts A {
 };
 
 (* error:  closing brace is missing *)
-Class E inherits A {
+class E inherits A {
 ;
+
+(* error: dispatch *)
+class TestDispatch {
+	test(x:Int):String {x(5,4,3,)};
+	test(x:Int):String {x(,5,4,)};
+	test(x:Int):String {x(4;3;)};
+	test(x:Int):String {x(,)};
+	ok(x:Int):String {x(5,4,3)};
+};
+
+(* error: empty explist *)
+class TestEmptyExpList {
+	test(x:Int):String {{}};
+	test():String {{}};
+	test():String {{;}};
+};
+
+(* error: bad feature *)
+class TestFeatureName {
+	badVariable : Int;
+	Y : Int;
+	x : int;
+	z : int
+};
+
+
+
