@@ -39,8 +39,10 @@ class TestFeatureName {
 	badVariable : Int;
 	Y : Int;
 	x : int;
-	z : int
+	z : Int
 };
+
+
 
 
 
