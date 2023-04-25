@@ -182,23 +182,16 @@
     
     /* feature */
     feature_list
-    : 		/* empty */
-    { $$ = nil_Features(); }
-    | feature_list feature
-    { $$ = append_Features($1,single_Features($2)); }
-    | feature
-    { $$ = single_Features($1); }
-    | error ';' feature_list
-    { $$ = $3; }
+    :  { $$ = nil_Features(); }
+    | feature_list feature { $$ = append_Features($1,single_Features($2)); }
+    | feature { $$ = single_Features($1); }
+    | error ';' feature_list { $$ = $3; }
     ;
 	
     feature
-    : OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' ';'
-    { $$ = method($1, $3, $6, $8); }
-    | OBJECTID '(' ')' ':' TYPEID '{' exp '}' ';'
-    { $$ = method($1, nil_Formals(), $5, $7); }
-    | OBJECTID ':' TYPEID feature_line ';'
-    { $$ = attr($1, $3, $4); }
+    : OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' ';' { $$ = method($1, $3, $6, $8); }
+    | OBJECTID '(' ')' ':' TYPEID '{' exp '}' ';' { $$ = method($1, nil_Formals(), $5, $7); }
+    | OBJECTID ':' TYPEID feature_line ';' { $$ = attr($1, $3, $4); }
 	;
 
 	feature_line
@@ -208,112 +201,72 @@
 
     /* formal */
     formal_list
-    : formal
-    { $$ = single_Formals($1); }
-    | formal_list ',' formal
-    { $$ = append_Formals($1, single_Formals($3)); }
+    : formal { $$ = single_Formals($1); }
+    | formal_list ',' formal { $$ = append_Formals($1, single_Formals($3)); }
+	;
 
     formal
-    : OBJECTID ':' TYPEID
-    { $$ = formal($1, $3); }
+    : OBJECTID ':' TYPEID { $$ = formal($1, $3); }
+	;
 
     /* branch */
     branch_list
-    : branch
-    { $$ = single_Cases($1); }
-    | branch_list branch
-    { $$ = append_Cases($1, single_Cases($2)); }
+    : branch { $$ = single_Cases($1); }
+    | branch_list branch { $$ = append_Cases($1, single_Cases($2)); }
+	;
     
     branch
-    : OBJECTID ':' TYPEID DARROW exp ';' 
-    { $$ = branch($1, $3, $5); }
+    : OBJECTID ':' TYPEID DARROW exp ';'  { $$ = branch($1, $3, $5); }
+	;
 
     /* exp */
     exp_list
-    : exp ';'
-    { $$ = single_Expressions($1); }
-    | exp_list  exp ';'
-    { $$ = append_Expressions($1, single_Expressions($2)); }
-    | error ';' exp_list
-    { $$ = $3; }
-
-    formal_exp_list
-    : exp
-    { $$ = single_Expressions($1); }
-    | formal_exp_list ',' exp
-    { $$ = append_Expressions($1, single_Expressions($3)); }
-
-    let
-    : OBJECTID ':' TYPEID feature_line IN exp
-    { $$ = let($1, $3, $4, $6); }
-    | OBJECTID ':' TYPEID feature_line ',' let
-    { $$ = let($1, $3, $4, $6); }
-    | error ',' let
-    { $$ = $3; }
-	
-	
-	feature_line
-	:  { SET_NODELOC(0); $$ = no_expr(); }
-	|  ASSIGN exp  { $$ = $2; }
+    : exp ';' { $$ = single_Expressions($1); }
+    | exp_list  exp ';' { $$ = append_Expressions($1, single_Expressions($2)); }
+    | error ';' exp_list { $$ = $3; }
 	;
 
+    formal_exp_list
+    : exp { $$ = single_Expressions($1); }
+    | formal_exp_list ',' exp { $$ = append_Expressions($1, single_Expressions($3)); }
+	;
+
+    let
+    : OBJECTID ':' TYPEID feature_line IN exp { $$ = let($1, $3, $4, $6); }
+    | OBJECTID ':' TYPEID feature_line ',' let { $$ = let($1, $3, $4, $6); }
+    | error ',' let { $$ = $3; }
+	;
+
+
     exp
-    : OBJECTID ASSIGN exp
-    { $$ = assign($1, $3); }
-    | exp '.' OBJECTID '(' formal_exp_list ')'
-    { $$ = dispatch($1, $3, $5); }
-    | exp '.' OBJECTID '(' ')' 
-    { $$ = dispatch($1, $3, nil_Expressions()); }
-    | exp '@' TYPEID '.' OBJECTID '(' formal_exp_list ')' 
-    { $$ = static_dispatch($1, $3, $5, $7); }
-    | exp '@' TYPEID '.' OBJECTID '(' ')' 
-    { $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
-    | OBJECTID '(' formal_exp_list ')' 
-    { $$ = dispatch( object(idtable.add_string("self")), $1, $3); }
-    | OBJECTID '(' ')' 
-    { $$ = dispatch( object(idtable.add_string("self")), $1, nil_Expressions()); }
-    | IF exp THEN exp ELSE exp FI
-    { $$ = cond($2, $4, $6); }
-    | WHILE exp LOOP exp POOL
-    { $$ = loop($2, $4); }
-    | '{' exp_list '}'
-    { $$ = block($2); }
-    | LET let
-    { $$ = $2; }
-    | CASE exp OF branch_list ESAC
-    { $$ = typcase($2, $4); }
-    | NEW TYPEID
-    { $$ = new_($2); }
-    | ISVOID exp
-    { $$ = isvoid($2); }
-    | exp '+' exp
-    { $$ = plus($1, $3); }
-    | exp '-' exp
-    { $$ = sub($1, $3); }
-    | exp '*' exp
-    { $$ = mul($1, $3); }
-    | exp '/' exp
-    { $$ = divide($1, $3); }
-    | '~' exp
-    { $$ = neg($2); }
-    | exp '<' exp
-    { $$ = lt($1, $3); }
-    | exp '=' exp
-    { $$ = eq($1, $3); }
-    | exp LE exp
-    { $$ = leq($1, $3); }
-    | NOT exp
-    { $$ = comp($2); }
-    | '(' exp ')'
-    { $$ = $2; }
-    | OBJECTID
-    { $$ = object($1) ;}
-    | INT_CONST
-    { $$ = int_const($1) ;}
-    | STR_CONST
-    { $$ = string_const($1) ;}
-    | BOOL_CONST
-    { $$ = bool_const($1) ;}
+    : OBJECTID ASSIGN exp { $$ = assign($1, $3); }
+    | exp '.' OBJECTID '(' formal_exp_list ')' { $$ = dispatch($1, $3, $5); }
+    | exp '.' OBJECTID '(' ')' { $$ = dispatch($1, $3, nil_Expressions()); }
+    | exp '@' TYPEID '.' OBJECTID '(' formal_exp_list ')' { $$ = static_dispatch($1, $3, $5, $7); }
+    | exp '@' TYPEID '.' OBJECTID '(' ')' { $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
+    | OBJECTID '(' formal_exp_list ')' { $$ = dispatch( object(idtable.add_string("self")), $1, $3); }
+    | OBJECTID '(' ')' { $$ = dispatch( object(idtable.add_string("self")), $1, nil_Expressions()); }
+    | IF exp THEN exp ELSE exp FI { $$ = cond($2, $4, $6); }
+    | WHILE exp LOOP exp POOL { $$ = loop($2, $4); }
+    | '{' exp_list '}' { $$ = block($2); }
+    | LET let { $$ = $2; }
+    | CASE exp OF branch_list ESAC { $$ = typcase($2, $4); }
+    | NEW TYPEID { $$ = new_($2); }
+    | ISVOID exp { $$ = isvoid($2); }
+    | exp '+' exp { $$ = plus($1, $3); }
+    | exp '-' exp { $$ = sub($1, $3); }
+    | exp '*' exp { $$ = mul($1, $3); }
+    | exp '/' exp { $$ = divide($1, $3); }
+    | '~' exp { $$ = neg($2); }
+    | exp '<' exp { $$ = lt($1, $3); }
+    | exp '=' exp { $$ = eq($1, $3); }
+    | exp LE exp  { $$ = leq($1, $3); }
+    | NOT exp  { $$ = comp($2); }
+    | '(' exp ')' { $$ = $2; }
+    | OBJECTID { $$ = object($1) ;}
+    | INT_CONST { $$ = int_const($1) ;}
+    | STR_CONST { $$ = string_const($1) ;}
+    | BOOL_CONST { $$ = bool_const($1) ;}
     
     
     /* end of grammar */
