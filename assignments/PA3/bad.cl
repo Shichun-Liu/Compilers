@@ -18,8 +18,7 @@ class D inherts A {
 class E inherits A {
 ;
 
-(* error: dispatch *)
-class TestDispatch {
+class Dispatch {
 	test(x:Int):String {x(5,4,3,)};
 	test(x:Int):String {x(,5,4,)};
 	test(x:Int):String {x(4;3;)};
@@ -27,22 +26,52 @@ class TestDispatch {
 	ok(x:Int):String {x(5,4,3)};
 };
 
-(* error: empty explist *)
-class TestEmptyExpList {
-	test(x:Int):String {{}};
-	test():String {{}};
-	test():String {{;}};
-};
-
-(* error: bad feature *)
-class TestFeatureName {
-	badVariable : Int;
+class BadFeatureName {
 	Y : Int;
 	x : int;
 	z : Int
 };
 
+class badClassName {
+	a : Int;
+};
 
+class {
+	a : Int;
+};
+
+class LE {
+	f():Int {x<=y<=z};
+};
+
+class Loop {
+	f() : Int {{
+		while 1 loop 1 loop;
+		while 1 pool 1 pool;
+	}};
+
+	g() : Int {while 1 1 loop};
+};
+
+class TypeError {
+	a : Int <- 0;
+	b : Int <- ;
+	f(a : Int) : Int {new a};
+	g(x : Object) : b {1};
+	z(a : Int) : Int {a <- A};
+};
+
+class Let {
+	f() : Int { let x : Int <- 1, b : Int <- B in a + B };
+};
+
+class BadExpr {
+	f(a : Int) : Int {a++};
+};
+
+class InheritFromObject inherits obj {
+	a : Int;
+};
 
 
 
