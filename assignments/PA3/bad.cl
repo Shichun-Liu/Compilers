@@ -18,7 +18,7 @@ class D inherts A {
 class E inherits A {
 ;
 
-class FeatureList {
+class FormalList {
 	f(x : Int) : Int { x(5,4,3,) };
 	f(x : Int) : Int { x(,5,4,) };
 	f(x : Int) : Int { x(4;3;) };
@@ -32,10 +32,6 @@ class BadFeatureName {
 	Y : Int;
 	x : int;
 	z : Int
-};
-
-class badClassName {
-	a : Int;
 };
 
 class {
@@ -68,6 +64,8 @@ class BadExpr {
 	f(a : Int) : Int {a++};
 };
 
-class InheritFromObject inherits obj {
-	a : Int;
+
+class BadLet {
+	f() : Int { let a : Int,  in 0 };
+	f() : Int { let a : int <- 0 in 0 };
 };

@@ -129,7 +129,7 @@
     value of each non terminal. (See section 3.6 in the bison 
     documentation for details). */
     
-    /* Declare types for the grammar's non-terminals. */
+    /* non-terminals. */
     %type <program> program
     %type <classes> class_list
     %type <class_> class
@@ -144,7 +144,6 @@
     %type <expressions> exp_list_inline
     %type <expression> exp
     %type <expression> let
-
 
 
     /* Precedence declarations go here. */
@@ -170,9 +169,9 @@
     /* class */
     class_list
     : class { $$ = single_Classes($1); parse_results = $$; }
-    | class_list class	{ $$ = append_Classes($1,single_Classes($2)); parse_results = $$; }
+    | class_list class	{ $$ = append_Classes($1, single_Classes($2)); parse_results = $$; }
     ;
-    
+
     class
     : CLASS TYPEID '{' feature_list '}' ';' 
 	{ $$ = class_($2, idtable.add_string("Object"), $4, stringtable.add_string(curr_filename)); }
@@ -236,6 +235,7 @@
     : OBJECTID ':' TYPEID feature_line IN exp { $$ = let($1, $3, $4, $6); }
     | OBJECTID ':' TYPEID feature_line ',' let { $$ = let($1, $3, $4, $6); }
     | error ',' let { $$ = $3; }
+    | error IN exp {  }
 	;
   
 	/* cool-manual: 12 Type Rules */
