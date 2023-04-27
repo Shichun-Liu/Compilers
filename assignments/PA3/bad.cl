@@ -42,6 +42,10 @@ class BadLE {
 	f() : Int { x<=y<=z };
 };
 
+class BadBlock {
+	f() : Int { {x<-;} };
+};
+
 class BadLoop {
 	f() : Int { while 1 loop 1 loop };
 	f() : Int { while 1 1 loop };
@@ -50,6 +54,11 @@ class BadLoop {
 
 class BadIf {
 	f() : Int { if 1 then 0  };
+};
+
+class BadLet {
+	f() : Int { let a : Int,  in 0 };
+	f() : Int { let a : int <- 0 in 0 };
 };
 
 class TypeError {
@@ -62,10 +71,4 @@ class TypeError {
 
 class BadExpr {
 	f(a : Int) : Int {a++};
-};
-
-
-class BadLet {
-	f() : Int { let a : Int,  in 0 };
-	f() : Int { let a : int <- 0 in 0 };
 };

@@ -191,6 +191,7 @@
     : OBJECTID '(' ')' ':' TYPEID '{' exp '}' ';' { $$ = method($1, nil_Formals(), $5, $7); }
     | OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' ';' { $$ = method($1, $3, $6, $8); }
     | OBJECTID ':' TYPEID feature_line ';' { $$ = attr($1, $3, $4); }
+    // | OBJECTID ':' TYPEID ';' { SET_NODELOC(0);  $$ = attr($1, $3, no_expr()); }
 	;
 
 	feature_line
