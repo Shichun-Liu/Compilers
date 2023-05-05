@@ -55,6 +55,13 @@ public:
    tree_node *copy()		 { return copy_Feature(); }
    virtual Feature copy_Feature() = 0;
 
+   // TODO: symbol table
+   virtual Symbol get_name() = 0;
+   virtual bool is_method() = 0;
+   virtual void add_method_to_table(Symbol class_name) = 0;
+   virtual void add_attr_to_table(Symbol) = 0;
+   virtual void check_type() = 0;
+
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
 #endif
@@ -68,6 +75,10 @@ class Formal_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Formal(); }
    virtual Formal copy_Formal() = 0;
+
+   // TODO: type check
+   virtual Symbol get_name() = 0;
+   virtual Symbol get_type() = 0;
 
 #ifdef Formal_EXTRAS
    Formal_EXTRAS
@@ -83,6 +94,9 @@ public:
    tree_node *copy()		 { return copy_Expression(); }
    virtual Expression copy_Expression() = 0;
 
+   // TODO: type check
+   virtual Symbol check_expr_type() = 0;
+
 #ifdef Expression_EXTRAS
    Expression_EXTRAS
 #endif
@@ -96,6 +110,9 @@ class Case_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Case(); }
    virtual Case copy_Case() = 0;
+
+   // TODO: type check
+   virtual Symbol check_branch_type() = 0;
 
 #ifdef Case_EXTRAS
    Case_EXTRAS
@@ -167,6 +184,11 @@ public:
    Class_ copy_Class_();
    void dump(ostream& stream, int n);
 
+   // TODO: acyclic inheritance
+   Symbol get_name() { return name; }
+   Symbol get_parent() { return parent; }
+   Features get_features() { return features; }
+
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
 #endif
@@ -193,6 +215,15 @@ public:
    Feature copy_Feature();
    void dump(ostream& stream, int n);
 
+   // TODO: symbol table
+   Formals get_formals() { return formals; }
+   Symbol get_ret_type() { return return_type; }
+   Symbol get_name() { return name; }
+   bool is_method() { return true; }
+   void add_method_to_table(Symbol class_name);
+   void add_attr_to_table(Symbol classname) {}
+   void check_type();
+
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -217,6 +248,13 @@ public:
    Feature copy_Feature();
    void dump(ostream& stream, int n);
 
+   // TODO: type check
+   Symbol get_name() { return name; }
+   bool is_method() { return false; }
+   void add_method_to_table(Symbol class_name);
+   void add_attr_to_table(Symbol classname);
+   void check_type();
+
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
 #endif
@@ -238,6 +276,10 @@ public:
    }
    Formal copy_Formal();
    void dump(ostream& stream, int n);
+
+   // TODO: type check
+   Symbol get_name() { return name; }
+   Symbol get_type() { return type_decl; }
 
 #ifdef Formal_SHARED_EXTRAS
    Formal_SHARED_EXTRAS
@@ -263,6 +305,10 @@ public:
    Case copy_Case();
    void dump(ostream& stream, int n);
 
+   // TODO:
+   Symbol get_type_decl() { return type_decl; }
+   Symbol check_branch_type();
+
 #ifdef Case_SHARED_EXTRAS
    Case_SHARED_EXTRAS
 #endif
@@ -284,6 +330,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   // TODO: type check
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -311,6 +360,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -334,6 +385,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -359,6 +412,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -380,6 +435,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -403,6 +460,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -422,6 +481,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -449,6 +510,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -470,6 +533,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -493,6 +558,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -514,6 +581,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -537,6 +606,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -556,6 +627,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -579,6 +652,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -600,6 +675,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -623,6 +700,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -642,6 +721,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -663,6 +744,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -682,6 +765,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -703,6 +788,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -722,6 +809,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -743,6 +832,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
 
+   Symbol check_expr_type();
+
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -760,6 +851,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -780,6 +873,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+
+   Symbol check_expr_type();
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
