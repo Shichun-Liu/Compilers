@@ -8,6 +8,9 @@
 #include "symtab.h"
 #include "list.h"
 
+#include <vector>
+#include <map>
+
 #define TRUE 1
 #define FALSE 0
 
@@ -31,6 +34,15 @@ public:
   ostream& semant_error();
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
+
+  // TODO:acyclic check
+  std::map<Symbol,Class_> class_map;
+  std::vector<Class_> get_inheritance_chain(Symbol target_class);
+  typedef std::map<Symbol, Class_>::iterator iter;
+  typedef std::vector<Class_> chain;
+  typedef std::vector<Class_>::iterator chain_iter;
+  bool is_parent_of(Symbol parent,Symbol child);
+  Symbol LCA(Symbol u,Symbol v);
 };
 
 
