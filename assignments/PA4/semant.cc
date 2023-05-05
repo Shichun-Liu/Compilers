@@ -151,10 +151,7 @@ void ClassTable::install_basic_classes() {
     // "val" for the integer.
     //
     Class_ Int_class =
-        class_(Int,
-               Object,
-               single_Features(attr(val, prim_slot, no_expr())),
-               filename);
+        class_(Int, Object, single_Features(attr(val, prim_slot, no_expr())), filename);
 
     //
     // Bool also has only the "val" slot.
@@ -227,7 +224,7 @@ ostream &ClassTable::semant_error() {
     return error_stream;
 }
 
-// start
+// TODO
 // add class to classtable
 void ClassTable::add_to_class_table(Class_ c) {
     Symbol name = c->get_name();
@@ -249,6 +246,7 @@ void ClassTable::add_to_class_table(Class_ c) {
 
 bool ClassTable::check_acyclic_main_nodefine() {
     bool main_flag = false;
+    bool has_cycle = false;
     for (auto it = inhert_graph.begin(); it != inhert_graph.end(); it++) {
         Symbol child = it->first;
         Symbol parent = it->second;
@@ -260,16 +258,23 @@ bool ClassTable::check_acyclic_main_nodefine() {
         while (parent != No_class) {
             // cycle
             if (parent == child) {
-                semant_error(class_table[child]) << "Has cycle!" << endl;
-                return false;
+                has_cycle = true;
+                semant_error(class_table[child]) << "Class " << child 
+                    << ", or an ancestor of " << child 
+                    << ", is involved in an inheritance cycle." << endl;
+                break;
             }
 
             if (!inhert_graph.count(parent)) {
-                semant_error(class_table[child]) << "Doesn't contain parent!" << endl;
+                semant_error(class_table[child]) << "Class " << child 
+                    << " inherits from an undefined class " << parent << "." << endl;
                 return false;
             }
             parent = inhert_graph[parent];
         }
+    }
+    if(has_cycle) {
+        return false;
     }
 
     if (!main_flag) {
@@ -428,7 +433,7 @@ bool ClassTable::check(Formals formals, std::vector<Symbol> par_types) {
 
 void class__class::gather_attribute(Env env) {
     if (name != Object) {
-        env.class_table->get_class(parent)->gather_attribute(env);
+        env.cla_table->get_class(parent)->gather_attribute(env);
     }
 
     for (int i = features->first(); features->more(i); i = features->next(i)) {
@@ -442,10 +447,10 @@ void method_class::add_to_env(Env env) {
 
 // attr_class
 void attr_class::add_to_env(Env env) {
-    if (env.symbol_table->probe(name) == NULL) {
-        env.symbol_table->addid(name, &type_decl);
+    if (env.sym_table->probe(name) == NULL) {
+        env.sym_table->addid(name, &type_decl);
     } else {
-        env.class_table->semant_error(env.cur_class) << "Can't be defined multiple times!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Can't be defined multiple times!" << endl;
     }
 }
 
@@ -471,98 +476,98 @@ Class_ class__class::type_check(Env env) {
 }
 
 Feature attr_class::type_check(Env env) {
-    env.symbol_table->enterscope();
+    env.sym_table->enterscope();
 
     Symbol cur_class = env.cur_class->get_name();
-    env.symbol_table->addid(self, &cur_class);
+    env.sym_table->addid(self, &cur_class);
 
     Symbol true_return_type = init->type_check(env)->type;
 
     if (name == self) {
-        env.class_table->semant_error(env.cur_class->get_filename(), this) << "Attr shouldn't be self!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Attr shouldn't be self!" << endl;
     }
 
     if (true_return_type != No_type) {
         if (true_return_type == SELF_TYPE) {
             true_return_type = env.cur_class->get_name();
         }
-        if (!(env.class_table->is_sub_class(true_return_type, type_decl))) {
-            env.class_table->semant_error(env.cur_class) << "True attr type isn't subcalss of type_decl!" << endl;
+        if (!(env.cla_table->is_sub_class(true_return_type, type_decl))) {
+            env.cla_table->semant_error(env.cur_class) << "True attr type isn't subcalss of type_decl!" << endl;
         }
     }
 
-    env.symbol_table->exitscope();
+    env.sym_table->exitscope();
 
     return this;
 }
 
 Feature method_class::type_check(Env env) {
-    env.symbol_table->enterscope();
+    env.sym_table->enterscope();
 
     Symbol cur_class = env.cur_class->get_name();
-    env.symbol_table->addid(self, &cur_class);
+    env.sym_table->addid(self, &cur_class);
 
     for (int i = formals->first(); formals->more(i); i = formals->next(i)) {
         formals->nth(i)->type_check(env);
     }
 
-    Symbol parent_class = env.class_table->get_same_method_parent(cur_class, name);
+    Symbol parent_class = env.cla_table->get_same_method_parent(cur_class, name);
     if (parent_class != NULL) {
-        if (!env.class_table->check_method(cur_class, parent_class, name)) {
-            env.class_table->semant_error(env.cur_class) << "Method " << name << "inherent wrong!" << endl;
+        if (!env.cla_table->check_method(cur_class, parent_class, name)) {
+            env.cla_table->semant_error(env.cur_class) << "Method " << name << "inherent wrong!" << endl;
         }
     }
 
     Symbol true_return_type = expr->type_check(env)->type;
     if (return_type == SELF_TYPE) {
         if (true_return_type != SELF_TYPE) {
-            env.class_table->semant_error(env.cur_class) << "True return type should be SELF_TYPE!" << endl;
+            env.cla_table->semant_error(env.cur_class) << "True return type should be SELF_TYPE!" << endl;
         }
-    } else if (!env.class_table->is_class_exit(return_type)) {
-        env.class_table->semant_error(env.cur_class) << "Return type doesn't exist!" << endl;
+    } else if (!env.cla_table->is_class_exit(return_type)) {
+        env.cla_table->semant_error(env.cur_class) << "Return type doesn't exist!" << endl;
     } else {
         if (true_return_type == SELF_TYPE) {
             true_return_type = env.cur_class->get_name();
         }
-        if (!env.class_table->is_sub_class(true_return_type, return_type)) {
-            env.class_table->semant_error(env.cur_class->get_filename(), this) << "True return type isn't subclass of return type!" << endl;
+        if (!env.cla_table->is_sub_class(true_return_type, return_type)) {
+            env.cla_table->semant_error(env.cur_class->get_filename(), this) << "True return type isn't subclass of return type!" << endl;
         }
     }
 
-    env.symbol_table->exitscope();
+    env.sym_table->exitscope();
 
     return this;
 }
 
 Formal formal_class::type_check(Env env) {
-    if (env.symbol_table->probe(name)) {
-        env.class_table->semant_error(env.cur_class) << "Name already exist!" << endl;
+    if (env.sym_table->probe(name)) {
+        env.cla_table->semant_error(env.cur_class) << "Name already exist!" << endl;
     } else if (type_decl == SELF_TYPE) {
-        env.class_table->semant_error(env.cur_class) << "Type shouldn't be SELF_TYPE!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Type shouldn't be SELF_TYPE!" << endl;
     } else {
-        env.symbol_table->addid(name, &type_decl);
+        env.sym_table->addid(name, &type_decl);
     }
 
     return this;
 }
 
 Symbol branch_class::type_check(Env env) {
-    if (env.symbol_table->probe(name)) {
-        env.class_table->semant_error(env.cur_class) << "Name already exist!" << endl;
+    if (env.sym_table->probe(name)) {
+        env.cla_table->semant_error(env.cur_class) << "Name already exist!" << endl;
         return Object;
     }
-    env.symbol_table->addid(name, &type_decl);
+    env.sym_table->addid(name, &type_decl);
 
     return expr->type_check(env)->type;
 }
 
 Expression assign_class::type_check(Env env) {
-    Symbol expect_type = *env.symbol_table->lookup(name);
+    Symbol expect_type = *env.sym_table->lookup(name);
     Symbol true_type = expr->type_check(env)->type;
-    if (env.class_table->is_sub_class(true_type, expect_type)) {
+    if (env.cla_table->is_sub_class(true_type, expect_type)) {
         type = true_type;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Assign error!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Assign error!" << endl;
         type = Object;
     }
 
@@ -571,8 +576,8 @@ Expression assign_class::type_check(Env env) {
 
 Expression static_dispatch_class::type_check(Env env) {
     Symbol t0 = expr->type_check(env)->type;
-    if (!env.class_table->is_sub_class(t0, type_name)) {
-        env.class_table->semant_error(env.cur_class) << "Wrong class!" << endl;
+    if (!env.cla_table->is_sub_class(t0, type_name)) {
+        env.cla_table->semant_error(env.cur_class) << "Wrong class!" << endl;
         type = Object;
         return this;
     }
@@ -590,18 +595,18 @@ Expression static_dispatch_class::type_check(Env env) {
         par_types.push_back(t);
     }
 
-    Formals formals = env.class_table->get_formals(cur_class, name);
-    Symbol return_type = env.class_table->get_return_type(cur_class, name);
+    Formals formals = env.cla_table->get_formals(cur_class, name);
+    Symbol return_type = env.cla_table->get_return_type(cur_class, name);
 
     if ((formals == NULL) || (return_type == NULL)) {
-        env.class_table->semant_error(env.cur_class) << "Method define wrong!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Method define wrong!" << endl;
         type = Object;
 
         return this;
     }
 
-    if (!env.class_table->check(formals, par_types)) {
-        env.class_table->semant_error(env.cur_class) << "Par type define wrong!" << endl;
+    if (!env.cla_table->check(formals, par_types)) {
+        env.cla_table->semant_error(env.cur_class) << "Par type define wrong!" << endl;
         type = Object;
 
         return this;
@@ -633,18 +638,18 @@ Expression dispatch_class::type_check(Env env) {
         par_types.push_back(t);
     }
 
-    Formals formals = env.class_table->get_formals(cur_class, name);
-    Symbol return_type = env.class_table->get_return_type(cur_class, name);
+    Formals formals = env.cla_table->get_formals(cur_class, name);
+    Symbol return_type = env.cla_table->get_return_type(cur_class, name);
 
     if ((formals == NULL) || (return_type == NULL)) {
-        env.class_table->semant_error(env.cur_class) << "Method define wrong!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Method define wrong!" << endl;
         type = Object;
 
         return this;
     }
 
-    if (!env.class_table->check(formals, par_types)) {
-        env.class_table->semant_error(env.cur_class) << "Par type define wrong!" << endl;
+    if (!env.cla_table->check(formals, par_types)) {
+        env.cla_table->semant_error(env.cur_class) << "Par type define wrong!" << endl;
         type = Object;
 
         return this;
@@ -670,10 +675,10 @@ Expression cond_class::type_check(Env env) {
         t2 = env.cur_class->get_name();
     }
     if (t0 != Bool) {
-        env.class_table->semant_error(env.cur_class) << "Pre type should be bool!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Pre type should be bool!" << endl;
         type = Object;
     } else {
-        type = env.class_table->lub(t1, t2);
+        type = env.cla_table->lub(t1, t2);
     }
 
     return this;
@@ -685,7 +690,7 @@ Expression loop_class::type_check(Env env) {
 
     type = Object;
     if (pred_type != Bool) {
-        env.class_table->semant_error(env.cur_class) << "Pre type should be bool!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Pre type should be bool!" << endl;
     }
 
     return this;
@@ -697,7 +702,7 @@ Expression typcase_class::type_check(Env env) {
     for (int i = cases->first(); cases->more(i); i = cases->next(i)) {
         for (int j = cases->first(); cases->more(j); j = cases->next(j)) {
             if ((i != j) && (cases->nth(i)->get_type() == cases->nth(j)->get_type())) {
-                env.class_table->semant_error(env.cur_class) << "Case should be different!" << endl;
+                env.cla_table->semant_error(env.cur_class) << "Case should be different!" << endl;
                 type = Object;
                 return this;
             }
@@ -707,9 +712,9 @@ Expression typcase_class::type_check(Env env) {
     int i = cases->first();
     type = cases->nth(i)->type_check(env);
     for (; cases->more(i); i = cases->next(i)) {
-        env.symbol_table->enterscope();
-        type = env.class_table->lub(type, cases->nth(i)->type_check(env));
-        env.symbol_table->exitscope();
+        env.sym_table->enterscope();
+        type = env.cla_table->lub(type, cases->nth(i)->type_check(env));
+        env.sym_table->exitscope();
     }
 
     return this;
@@ -727,28 +732,28 @@ Expression block_class::type_check(Env env) {
 
 Expression let_class::type_check(Env env) {
     if (identifier == self) {
-        env.class_table->semant_error(env.cur_class) << "Self can't be used in let!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Self can't be used in let!" << endl;
         type = Object;
     } else {
         Symbol expect_type = type_decl;
         Symbol true_type = init->type_check(env)->type;
 
         if (true_type == No_type) {
-            env.symbol_table->enterscope();
-            env.symbol_table->addid(identifier, &expect_type);
+            env.sym_table->enterscope();
+            env.sym_table->addid(identifier, &expect_type);
             Symbol s = body->type_check(env)->type;
             type = s;
-            env.symbol_table->exitscope();
+            env.sym_table->exitscope();
         } else {
-            if (!env.class_table->is_sub_class(true_type, expect_type)) {
-                env.class_table->semant_error(env.cur_class) << "True return type isn't subcalss of return type!" << endl;
+            if (!env.cla_table->is_sub_class(true_type, expect_type)) {
+                env.cla_table->semant_error(env.cur_class) << "True return type isn't subcalss of return type!" << endl;
                 type = Object;
             } else {
-                env.symbol_table->enterscope();
-                env.symbol_table->addid(identifier, &expect_type);
+                env.sym_table->enterscope();
+                env.sym_table->addid(identifier, &expect_type);
                 Symbol s = body->type_check(env)->get_type();
                 type = s;
-                env.symbol_table->exitscope();
+                env.sym_table->exitscope();
             }
         }
 
@@ -762,7 +767,7 @@ Expression plus_class::type_check(Env env) {
     if ((s1 == Int) && (s2 == Int)) {
         type = Int;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
         type = Object;
     }
 
@@ -775,7 +780,7 @@ Expression sub_class::type_check(Env env) {
     if ((s1 == Int) && (s2 == Int)) {
         type = Int;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
         type = Object;
     }
 
@@ -788,7 +793,7 @@ Expression mul_class::type_check(Env env) {
     if ((s1 == Int) && (s2 == Int)) {
         type = Int;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
         type = Object;
     }
 
@@ -801,7 +806,7 @@ Expression divide_class::type_check(Env env) {
     if ((s1 == Int) && (s2 == Int)) {
         type = Int;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
         type = Object;
     }
 
@@ -813,7 +818,7 @@ Expression neg_class::type_check(Env env) {
     if (s1 == Int) {
         type = Int;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Type should be int!"
+        env.cla_table->semant_error(env.cur_class) << "Type should be int!"
                                             << " " << s1 << endl;
         type = Object;
     }
@@ -827,7 +832,7 @@ Expression lt_class::type_check(Env env) {
     if ((s1 == Int) && (s2 == Int)) {
         type = Bool;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Type should both be int!" << endl;
         type = Object;
     }
 
@@ -840,7 +845,7 @@ Expression eq_class::type_check(Env env) {
     if ((s1 == Int && s2 != Int) || (s1 != Int && s2 == Int) ||
         (s1 == Str && s2 != Str) || (s1 != Str && s2 == Str) ||
         (s1 == Bool && s2 != Bool) || (s1 != Bool && s2 == Bool)) {
-        env.class_table->semant_error(env.cur_class) << "Can't compare " << s1 << " = " << s2 << endl;
+        env.cla_table->semant_error(env.cur_class) << "Can't compare " << s1 << " = " << s2 << endl;
         type = Object;
     } else {
         type = Bool;
@@ -857,7 +862,7 @@ Expression leq_class::type_check(Env env) {
         ((s1 == Bool) && (s2 == Bool))) {
         type = Bool;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Wrong type!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Wrong type!" << endl;
         type = Object;
     }
 
@@ -869,7 +874,7 @@ Expression comp_class::type_check(Env env) {
     if (s1 == Bool) {
         type = Bool;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Type should be bool!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Type should be bool!" << endl;
         type = Object;
     }
 
@@ -898,10 +903,10 @@ Expression new__class::type_check(Env env) {
     Symbol s = type_name;
     if (s == SELF_TYPE) {
         type = s;
-    } else if (env.class_table->is_class_exit(s)) {
+    } else if (env.cla_table->is_class_exit(s)) {
         type = s;
     } else {
-        env.class_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
         type = Object;
     }
 
@@ -910,8 +915,8 @@ Expression new__class::type_check(Env env) {
 
 Expression isvoid_class::type_check(Env env) {
     Symbol s = e1->type_check(env)->type;
-    if (!env.class_table->is_class_exit(s)) {
-        env.class_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
+    if (!env.cla_table->is_class_exit(s)) {
+        env.cla_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
         type = Object;
     }
     type = Bool;
@@ -928,10 +933,10 @@ Expression no_expr_class::type_check(Env env) {
 Expression object_class::type_check(Env env) {
     if (name == self) {
         type = SELF_TYPE;
-    } else if (env.symbol_table->lookup(name) != NULL) {
-        type = *(env.symbol_table->lookup(name));
+    } else if (env.sym_table->lookup(name) != NULL) {
+        type = *(env.sym_table->lookup(name));
     } else {
-        env.class_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
+        env.cla_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
         type = Object;
     }
 
@@ -967,11 +972,11 @@ void program_class::semant() {
     if ((!classtable->errors()) && (classtable->check_acyclic_main_nodefine())) {
         Env env(classtable);
         for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
-            env.symbol_table->enterscope();
+            env.sym_table->enterscope();
             env.cur_class = classes->nth(i);
             classes->nth(i)->gather_attribute(env);
             classes->nth(i)->type_check(env);
-            env.symbol_table->exitscope();
+            env.sym_table->exitscope();
         }
     }
 

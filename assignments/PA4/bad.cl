@@ -1,10 +1,10 @@
-
-
 class A inherits C {};
 
 class B inherits A {};
 
 class C inherits B {};
+
+-- class D inherits NotExistClass {};
 
 Class Main {
 	main():C {
