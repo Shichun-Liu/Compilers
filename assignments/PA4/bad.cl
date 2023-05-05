@@ -10,6 +10,12 @@ class C {
 	};
 };
 
+class A inherits C {};
+
+class B inherits A {};
+
+class C inherits B {};
+
 Class Main {
 	main():C {
 	 {

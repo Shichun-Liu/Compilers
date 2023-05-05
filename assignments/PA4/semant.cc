@@ -63,8 +63,7 @@ static Symbol
 //
 // Initializing the predefined symbols.
 //
-static void initialize_constants(void)
-{
+static void initialize_constants(void) {
     arg         = idtable.add_string("arg");
     arg2        = idtable.add_string("arg2");
     Bool        = idtable.add_string("Bool");
@@ -99,7 +98,7 @@ inline bool is_basic_symbol_class(Symbol my_symbol) {
     return (my_symbol == Int || my_symbol == Str || my_symbol == SELF_TYPE || my_symbol == Bool);
 }
 
-ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr) {
+ClassTable::ClassTable(Classes classes) : semant_errors(0), error_stream(cerr) {
     /* Fill this in */
     install_basic_classes();
     log << "Now check in the class table" << endl;
@@ -110,14 +109,14 @@ ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr) 
          *  Check redefined class
          */
         if (class_node->get_name() == SELF_TYPE) {
-            semant_error(class_node) << "SELF_TYPE redefined!\n";
+            semant_error(class_node) << "SELF_TYPE was previously defined.\n";
         }
 
         // class cannot be declared before
         if (class_map.find(class_node->get_name()) == class_map.end()) {
             class_map.insert(std::make_pair(class_node->get_name(), class_node));
         } else {
-            semant_error(class_node) << "Class " << class_node->get_name() << "redefined!\n";
+            semant_error(class_node) << "Class " << class_node->get_name() << " was previously defined.\n";
             return;
         }
     }
@@ -203,15 +202,12 @@ void ClassTable::install_basic_classes() {
     //        in_int() : Int                      "   an int     "  "     "
     //
     Class_ IO_class = 
-	class_(IO, 
-	       Object,
+	class_(IO, Object,
 	       append_Features(
 			       append_Features(
 					       append_Features(
-							       single_Features(method(out_string, single_Formals(formal(arg, Str)),
-										      SELF_TYPE, no_expr())),
-							       single_Features(method(out_int, single_Formals(formal(arg, Int)),
-										      SELF_TYPE, no_expr()))),
+							       single_Features(method(out_string, single_Formals(formal(arg, Str)), SELF_TYPE, no_expr())),
+							       single_Features(method(out_int, single_Formals(formal(arg, Int)), SELF_TYPE, no_expr()))),
 					       single_Features(method(in_string, nil_Formals(), Str, no_expr()))),
 			       single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
 	       filename);  
@@ -220,14 +216,12 @@ void ClassTable::install_basic_classes() {
     // The Int class has no methods and only a single attribute, the
     // "val" for the integer. 
     //
-    Class_ Int_class =
-	class_(Int, Object, single_Features(attr(val, prim_slot, no_expr())), filename);
+    Class_ Int_class = class_(Int, Object, single_Features(attr(val, prim_slot, no_expr())), filename);
 
     //
     // Bool also has only the "val" slot.
     //
-    Class_ Bool_class =
-	class_(Bool, Object, single_Features(attr(val, prim_slot, no_expr())),filename);
+    Class_ Bool_class = class_(Bool, Object, single_Features(attr(val, prim_slot, no_expr())), filename);
 
     //
     // The class Str has a number of slots and operations:
@@ -238,18 +232,15 @@ void ClassTable::install_basic_classes() {
     //       substr(arg: Int, arg2: Int): Str     substring selection
     //
     Class_ Str_class =
-        class_(Str,
-               Object,
+        class_(Str, Object,
                append_Features(
                    append_Features(
-                       append_Features(
-                           append_Features(
-                               single_Features(attr(val, Int, no_expr())),
-                               single_Features(attr(str_field, prim_slot, no_expr()))),
-                           single_Features(method(length, nil_Formals(), Int, no_expr()))),
+                       append_Features(append_Features(
+                                           single_Features(attr(val, Int, no_expr())),
+                                           single_Features(attr(str_field, prim_slot, no_expr()))),
+                                       single_Features(method(length, nil_Formals(), Int, no_expr()))),
                        single_Features(method(concat, single_Formals(formal(arg, Str)), Str, no_expr()))),
-                   single_Features(method(substr,
-                                          append_Formals(single_Formals(formal(arg, Int)), single_Formals(formal(arg2, Int))), Str, no_expr()))),
+                   single_Features(method(substr, append_Formals(single_Formals(formal(arg, Int)), single_Formals(formal(arg2, Int))), Str, no_expr()))),
                filename);
 
     class_map.insert(std::make_pair(Object, Object_class));
@@ -825,7 +816,7 @@ void program_class::semant()
     initialize_constants();
 
     /* ClassTable constructor may do some semantic analysis */
-    ClassTable *classtable = new ClassTable(classes);
+    classtable = new ClassTable(classes);
 
     /* some semantic analysis code may go here */
 

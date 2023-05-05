@@ -1,0 +1,2 @@
+bad.cl:17: Class C was previously defined.
+Compilation halted due to static semantic errors.
