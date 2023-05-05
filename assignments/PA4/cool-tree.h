@@ -11,6 +11,31 @@
 
 #include "tree.h"
 #include "cool-tree.handcode.h"
+#include <symtab.h>
+
+// my add 
+class ClassTable;
+
+// (O, M, C)
+class Env {
+public:
+   SymbolTable<Symbol, Symbol> *om;
+   ClassTable *ct;
+   Class_ cur_class;
+   Env() {
+      om = new SymbolTable<Symbol, Symbol>();
+      ct = NULL;
+      cur_class = NULL;
+   }
+
+   Env(ClassTable *ct) {
+      om = new SymbolTable<Symbol, Symbol>();
+      this->ct = ct;
+      cur_class = NULL;
+   }
+};
+
+
 
 
 // define the class for phylum
@@ -34,12 +59,15 @@ typedef class Class__class *Class_;
 class Class__class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Class_(); }
-   virtual Class_ copy_Class_() = 0;
+   virtual Class_ copy_Class_() = 0;   
 
-   // TODO: acyclic inheritance
-   virtual Symbol get_name() = 0;
+   // my add 
+   virtual Symbol get_name() = 0; 	       
    virtual Symbol get_parent() = 0;
    virtual Features get_features() = 0;
+   virtual void gather_attribute(Env env) = 0;
+   virtual Class_ type_check(Env env) = 0;
+   virtual Feature get_method(Symbol name) = 0;
 
 #ifdef Class__EXTRAS
    Class__EXTRAS
@@ -54,13 +82,16 @@ class Feature_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Feature(); }
    virtual Feature copy_Feature() = 0;
-
-   // TODO: symbol table
-   virtual Symbol get_name() = 0;
+   // my add
+   virtual void add_to_env(Env env) = 0;
+   virtual Feature type_check(Env env) = 0;
    virtual bool is_method() = 0;
-   virtual void add_method_to_table(Symbol class_name) = 0;
-   virtual void add_attr_to_table(Symbol) = 0;
-   virtual void check_type() = 0;
+   virtual Symbol get_name() = 0;
+   virtual Formals get_formals() = 0;
+   virtual Symbol get_return_type() = 0;
+   virtual Expression get_expr() = 0;
+   virtual Symbol get_type_decl() = 0;
+   virtual Expression get_init() = 0;
 
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
@@ -75,10 +106,11 @@ class Formal_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Formal(); }
    virtual Formal copy_Formal() = 0;
-
-   // TODO: type check
+   // my add 
+   virtual Formal type_check(Env env) = 0;
    virtual Symbol get_name() = 0;
    virtual Symbol get_type() = 0;
+   // add end
 
 #ifdef Formal_EXTRAS
    Formal_EXTRAS
@@ -93,9 +125,8 @@ class Expression_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Expression(); }
    virtual Expression copy_Expression() = 0;
-
-   // TODO: type check
-   virtual Symbol check_expr_type() = 0;
+   // my add 
+   virtual Expression type_check(Env env) = 0;
 
 #ifdef Expression_EXTRAS
    Expression_EXTRAS
@@ -110,9 +141,9 @@ class Case_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Case(); }
    virtual Case copy_Case() = 0;
-
-   // TODO: type check
-   virtual Symbol check_branch_type() = 0;
+   // my add 
+   virtual Symbol type_check(Env env) = 0;
+   virtual Symbol get_type() = 0;
 
 #ifdef Case_EXTRAS
    Case_EXTRAS
@@ -184,10 +215,14 @@ public:
    Class_ copy_Class_();
    void dump(ostream& stream, int n);
 
-   // TODO: acyclic inheritance
-   Symbol get_name() { return name; }
-   Symbol get_parent() { return parent; }
-   Features get_features() { return features; }
+   //my add
+   Symbol get_name()   { return name; };		       
+   Symbol get_parent() { return parent; };
+   Features get_features() { return features; };
+   void gather_attribute(Env env);
+   Class_ type_check(Env env);
+   Feature get_method(Symbol name);
+
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
@@ -215,14 +250,16 @@ public:
    Feature copy_Feature();
    void dump(ostream& stream, int n);
 
-   // TODO: symbol table
-   Formals get_formals() { return formals; }
-   Symbol get_ret_type() { return return_type; }
-   Symbol get_name() { return name; }
-   bool is_method() { return true; }
-   void add_method_to_table(Symbol class_name);
-   void add_attr_to_table(Symbol classname) {}
-   void check_type();
+   // my add
+   void add_to_env(Env env);
+   Feature type_check(Env env);
+   bool is_method() { return true; };
+   Symbol get_name() { return name; };
+   Formals get_formals() { return formals; };
+   Symbol get_return_type() { return return_type; };
+   Expression get_expr() { return expr; };
+   Symbol get_type_decl() { return NULL; };
+   Expression get_init() { return NULL; };
 
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
@@ -248,12 +285,17 @@ public:
    Feature copy_Feature();
    void dump(ostream& stream, int n);
 
-   // TODO: type check
-   Symbol get_name() { return name; }
-   bool is_method() { return false; }
-   void add_method_to_table(Symbol class_name);
-   void add_attr_to_table(Symbol classname);
-   void check_type();
+   // my add 
+   void add_to_env(Env env);
+   Feature type_check(Env env);
+   bool is_method() { return false; };
+   Symbol get_name() { return name; };
+   Formals get_formals() { return NULL; };
+   Symbol get_return_type() { return NULL; };
+   Expression get_expr() { return NULL; };
+   Symbol get_type_decl() { return type_decl; };
+   Expression get_init() { return init; };
+   
 
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
@@ -276,10 +318,11 @@ public:
    }
    Formal copy_Formal();
    void dump(ostream& stream, int n);
-
-   // TODO: type check
-   Symbol get_name() { return name; }
-   Symbol get_type() { return type_decl; }
+   // my add 
+   Formal type_check(Env env);
+   Symbol get_name() { return name; };
+   Symbol get_type() { return type_decl; };
+   
 
 #ifdef Formal_SHARED_EXTRAS
    Formal_SHARED_EXTRAS
@@ -304,10 +347,10 @@ public:
    }
    Case copy_Case();
    void dump(ostream& stream, int n);
-
-   // TODO:
-   Symbol get_type_decl() { return type_decl; }
-   Symbol check_branch_type();
+   // my add 
+   Symbol type_check(Env env);
+   Symbol get_type() { return type_decl; };
+   
 
 #ifdef Case_SHARED_EXTRAS
    Case_SHARED_EXTRAS
@@ -330,9 +373,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   // TODO: type check
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+   
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -359,8 +402,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+   
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -385,8 +429,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -411,8 +456,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -435,8 +481,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -459,8 +506,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -481,8 +529,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -509,8 +558,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -533,8 +582,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -557,8 +607,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -581,8 +632,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -605,8 +657,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -627,9 +680,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
-
+   // my add
+   Expression type_check(Env env);
+    
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
 #endif
@@ -651,8 +704,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+   
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -675,8 +729,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -699,8 +754,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -721,8 +777,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+   
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -743,8 +800,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -765,8 +823,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -787,8 +846,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -809,8 +869,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -831,8 +892,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -851,8 +913,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -873,8 +936,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-
-   Symbol check_expr_type();
+   // my add
+   Expression type_check(Env env);
+    
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
