@@ -247,8 +247,8 @@ void program_class::semant()
     /* some semantic analysis code may go here */
 
     if (classtable->errors()) {
-	cerr << "Compilation halted due to static semantic errors." << endl;
-	exit(1);
+    cerr << "Compilation halted due to static semantic errors." << endl;
+    exit(1);
     }
 }
 
