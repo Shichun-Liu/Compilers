@@ -1,45 +1,5 @@
-#2
-_program
-  #2
-  _class
-    C
-    Object
-    "bad/bad8.cl"
-    (
-    #3
-    _attr
-      c
-      A
-      #0
-      _no_expr
-      : _no_type
-    )
-  #5
-  _class
-    A
-    C
-    "bad/bad8.cl"
-    (
-    #6
-    _attr
-      a
-      C
-      #0
-      _no_expr
-      : _no_type
-    )
-  #10
-  _class
-    Main
-    Object
-    "bad/bad8.cl"
-    (
-    #11
-    _method
-      main
-      C
-      #11
-      _new
-        C
-      : C
-    )
+bad/bad9.cl:4: 'self' cannot be the name of an attribute.
+bad/bad9.cl:6: Inferred return type C of method f1 does not conform to declared return type Int.
+bad/bad9.cl:7: Inferred return type SELF_TYPE of method f2 does not conform to declared return type Int.
+bad/bad9.cl:8: Undefined return type D in method f3.
+Compilation halted due to static semantic errors.

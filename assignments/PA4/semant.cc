@@ -502,9 +502,7 @@ Feature attr_class::type_check(Environment env) {
             env.cla_table->semant_error(env.cur_class) << "True attr type isn't subclass of type_decl!" << endl;
         }
     }
-
     env.sym_table->exitscope();
-
     return this;
 }
 
@@ -525,24 +523,29 @@ Feature method_class::type_check(Environment env) {
         }
     }
 
-    Symbol true_return_type = expr->type_check(env)->type;
-    if (return_type == SELF_TYPE) {
-        if (true_return_type != SELF_TYPE) {
-            env.cla_table->semant_error(env.cur_class) << "True return type should be SELF_TYPE!" << endl;
+    Symbol inferred_return_type = expr->type_check(env)->type;
+    if (return_type == SELF_TYPE || return_type == env.cur_class->get_name()) {
+        if(inferred_return_type != SELF_TYPE && inferred_return_type != env.cur_class->get_name()) {
+            env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Inferred return type " 
+                << inferred_return_type << " of method " << name << " does not conform to declared return type SELF_TYPE." << endl;
         }
     } else if (!env.cla_table->is_class_exit(return_type)) {
-        env.cla_table->semant_error(env.cur_class) << "Return type doesn't exist!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Undefined return type " << return_type 
+            << " in method " << name << "." << endl;
     } else {
-        if (true_return_type == SELF_TYPE) {
-            true_return_type = env.cur_class->get_name();
-        }
-        if (!env.cla_table->is_sub_class(true_return_type, return_type)) {
-            env.cla_table->semant_error(env.cur_class->get_filename(), this) << "True return type isn't subclass of return type!" << endl;
+        if (inferred_return_type == SELF_TYPE) {
+            inferred_return_type = env.cur_class->get_name();
+            if (!env.cla_table->is_sub_class(inferred_return_type, return_type) || return_type != SELF_TYPE) {
+                env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Inferred return type SELF_TYPE of method " << name
+                    << " does not conform to declared return type " << return_type << "." << endl;
+            }
+        } else if (!env.cla_table->is_sub_class(inferred_return_type, return_type)) {
+            env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Inferred return type " 
+                << inferred_return_type << " of method " << name
+                << " does not conform to declared return type " << return_type << "." << endl;
         }
     }
-
     env.sym_table->exitscope();
-
     return this;
 }
 
