@@ -83,6 +83,11 @@ static void initialize_constants(void) {
     val         = idtable.add_string("_val");
 }
 
+inline bool is_basic_symbol_class(Symbol symbol) {
+  return (symbol == Int || symbol == Str || symbol == SELF_TYPE || symbol == Bool);
+}
+
+
 ClassTable::ClassTable(Classes classes) : semant_errors(0), error_stream(cerr) {
     /* Fill this in */
     install_basic_classes();
@@ -231,13 +236,16 @@ void ClassTable::add_to_class_table(Class_ c) {
     Symbol parent = c->get_parent();
     Features features = c->get_features();
     Symbol filename = c->get_filename();
-    if ((parent == Bool) || (parent == Str) || (parent == SELF_TYPE)) {
-        semant_error(c) << name << "Can't inherent from " << parent << "!" << endl;
-    } else if (name == SELF_TYPE) {
-        semant_error(c) << "Can't define SELF_TYPE!" << endl;
+    if (is_basic_symbol_class(parent)) {
+        semant_error(c) << "Class " << name << " cannot inherit class " << parent << "." << endl;
     } else if ((class_table.find(name) != class_table.end()) ||
                (inhert_graph.find(name) != inhert_graph.end())) {
-        semant_error(c) << "Can't be defined multiple times!" << endl;
+        if(is_basic_symbol_class(name)) {
+            semant_error(c) << "Redefinition of basic class " 
+                            << name << "." << endl;
+        } else {
+            semant_error(c) << "Class " << name << " was previously defined." << endl;
+        }
     } else {
         class_table[name] = c;
         inhert_graph[name] = parent;
@@ -284,7 +292,7 @@ bool ClassTable::check_acyclic_main_nodefine() {
     return true;
 }
 
-// 获得s对应的类
+// s map to its class
 Class_ ClassTable::get_class(Symbol s) {
     return class_table[s];
 }
@@ -431,7 +439,7 @@ bool ClassTable::check(Formals formals, std::vector<Symbol> par_types) {
     return true;
 }
 
-void class__class::gather_attribute(Env env) {
+void class__class::gather_attribute(Environment env) {
     if (name != Object) {
         env.cla_table->get_class(parent)->gather_attribute(env);
     }
@@ -442,15 +450,16 @@ void class__class::gather_attribute(Env env) {
 }
 
 // method_class do nothing
-void method_class::add_to_env(Env env) {
+void method_class::add_to_env(Environment env) {
 }
 
 // attr_class
-void attr_class::add_to_env(Env env) {
+void attr_class::add_to_env(Environment env) {
     if (env.sym_table->probe(name) == NULL) {
         env.sym_table->addid(name, &type_decl);
     } else {
-        env.cla_table->semant_error(env.cur_class) << "Can't be defined multiple times!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Attribute " 
+            << name << " is multiply defined in class." << endl;
     }
 }
 
@@ -460,22 +469,20 @@ Feature class__class::get_method(Symbol name) {
             return features->nth(i);
         }
     }
-
     return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////
 // type_check start
 //////////////////////////////////////////////////////////////////
-Class_ class__class::type_check(Env env) {
+Class_ class__class::type_check(Environment env) {
     for (int i = features->first(); features->more(i); i = features->next(i)) {
         features->nth(i)->type_check(env);
     }
-
     return this;
 }
 
-Feature attr_class::type_check(Env env) {
+Feature attr_class::type_check(Environment env) {
     env.sym_table->enterscope();
 
     Symbol cur_class = env.cur_class->get_name();
@@ -484,7 +491,7 @@ Feature attr_class::type_check(Env env) {
     Symbol true_return_type = init->type_check(env)->type;
 
     if (name == self) {
-        env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Attr shouldn't be self!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) << "'self' cannot be the name of an attribute." << endl;
     }
 
     if (true_return_type != No_type) {
@@ -492,7 +499,7 @@ Feature attr_class::type_check(Env env) {
             true_return_type = env.cur_class->get_name();
         }
         if (!(env.cla_table->is_sub_class(true_return_type, type_decl))) {
-            env.cla_table->semant_error(env.cur_class) << "True attr type isn't subcalss of type_decl!" << endl;
+            env.cla_table->semant_error(env.cur_class) << "True attr type isn't subclass of type_decl!" << endl;
         }
     }
 
@@ -501,7 +508,7 @@ Feature attr_class::type_check(Env env) {
     return this;
 }
 
-Feature method_class::type_check(Env env) {
+Feature method_class::type_check(Environment env) {
     env.sym_table->enterscope();
 
     Symbol cur_class = env.cur_class->get_name();
@@ -539,7 +546,7 @@ Feature method_class::type_check(Env env) {
     return this;
 }
 
-Formal formal_class::type_check(Env env) {
+Formal formal_class::type_check(Environment env) {
     if (env.sym_table->probe(name)) {
         env.cla_table->semant_error(env.cur_class) << "Name already exist!" << endl;
     } else if (type_decl == SELF_TYPE) {
@@ -551,7 +558,7 @@ Formal formal_class::type_check(Env env) {
     return this;
 }
 
-Symbol branch_class::type_check(Env env) {
+Symbol branch_class::type_check(Environment env) {
     if (env.sym_table->probe(name)) {
         env.cla_table->semant_error(env.cur_class) << "Name already exist!" << endl;
         return Object;
@@ -561,7 +568,7 @@ Symbol branch_class::type_check(Env env) {
     return expr->type_check(env)->type;
 }
 
-Expression assign_class::type_check(Env env) {
+Expression assign_class::type_check(Environment env) {
     Symbol expect_type = *env.sym_table->lookup(name);
     Symbol true_type = expr->type_check(env)->type;
     if (env.cla_table->is_sub_class(true_type, expect_type)) {
@@ -574,7 +581,7 @@ Expression assign_class::type_check(Env env) {
     return this;
 }
 
-Expression static_dispatch_class::type_check(Env env) {
+Expression static_dispatch_class::type_check(Environment env) {
     Symbol t0 = expr->type_check(env)->type;
     if (!env.cla_table->is_sub_class(t0, type_name)) {
         env.cla_table->semant_error(env.cur_class) << "Wrong class!" << endl;
@@ -621,7 +628,7 @@ Expression static_dispatch_class::type_check(Env env) {
     return this;
 }
 
-Expression dispatch_class::type_check(Env env) {
+Expression dispatch_class::type_check(Environment env) {
     Symbol t0 = expr->type_check(env)->type;
 
     Symbol cur_class = t0;
@@ -664,7 +671,7 @@ Expression dispatch_class::type_check(Env env) {
     return this;
 }
 
-Expression cond_class::type_check(Env env) {
+Expression cond_class::type_check(Environment env) {
     Symbol t0 = pred->type_check(env)->type;
     Symbol t1 = then_exp->type_check(env)->type;
     Symbol t2 = else_exp->type_check(env)->type;
@@ -684,7 +691,7 @@ Expression cond_class::type_check(Env env) {
     return this;
 }
 
-Expression loop_class::type_check(Env env) {
+Expression loop_class::type_check(Environment env) {
     Symbol pred_type = pred->type_check(env)->type;
     Symbol body_type = body->type_check(env)->type;
 
@@ -696,7 +703,7 @@ Expression loop_class::type_check(Env env) {
     return this;
 }
 
-Expression typcase_class::type_check(Env env) {
+Expression typcase_class::type_check(Environment env) {
     Symbol expr_type = expr->type_check(env)->type;
 
     for (int i = cases->first(); cases->more(i); i = cases->next(i)) {
@@ -720,7 +727,7 @@ Expression typcase_class::type_check(Env env) {
     return this;
 }
 
-Expression block_class::type_check(Env env) {
+Expression block_class::type_check(Environment env) {
     Symbol s = NULL;
     for (int i = body->first(); body->more(i); i = body->next(i)) {
         s = body->nth(i)->type_check(env)->type;
@@ -730,7 +737,7 @@ Expression block_class::type_check(Env env) {
     return this;
 }
 
-Expression let_class::type_check(Env env) {
+Expression let_class::type_check(Environment env) {
     if (identifier == self) {
         env.cla_table->semant_error(env.cur_class) << "Self can't be used in let!" << endl;
         type = Object;
@@ -761,7 +768,7 @@ Expression let_class::type_check(Env env) {
     }
 }
 
-Expression plus_class::type_check(Env env) {
+Expression plus_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     Symbol s2 = e2->type_check(env)->type;
     if ((s1 == Int) && (s2 == Int)) {
@@ -774,7 +781,7 @@ Expression plus_class::type_check(Env env) {
     return this;
 }
 
-Expression sub_class::type_check(Env env) {
+Expression sub_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     Symbol s2 = e2->type_check(env)->type;
     if ((s1 == Int) && (s2 == Int)) {
@@ -787,7 +794,7 @@ Expression sub_class::type_check(Env env) {
     return this;
 }
 
-Expression mul_class::type_check(Env env) {
+Expression mul_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     Symbol s2 = e2->type_check(env)->type;
     if ((s1 == Int) && (s2 == Int)) {
@@ -800,7 +807,7 @@ Expression mul_class::type_check(Env env) {
     return this;
 }
 
-Expression divide_class::type_check(Env env) {
+Expression divide_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     Symbol s2 = e2->type_check(env)->type;
     if ((s1 == Int) && (s2 == Int)) {
@@ -813,7 +820,7 @@ Expression divide_class::type_check(Env env) {
     return this;
 }
 
-Expression neg_class::type_check(Env env) {
+Expression neg_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     if (s1 == Int) {
         type = Int;
@@ -826,7 +833,7 @@ Expression neg_class::type_check(Env env) {
     return this;
 }
 
-Expression lt_class::type_check(Env env) {
+Expression lt_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     Symbol s2 = e2->type_check(env)->type;
     if ((s1 == Int) && (s2 == Int)) {
@@ -839,7 +846,7 @@ Expression lt_class::type_check(Env env) {
     return this;
 }
 
-Expression eq_class::type_check(Env env) {
+Expression eq_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     Symbol s2 = e2->type_check(env)->type;
     if ((s1 == Int && s2 != Int) || (s1 != Int && s2 == Int) ||
@@ -854,7 +861,7 @@ Expression eq_class::type_check(Env env) {
     return this;
 }
 
-Expression leq_class::type_check(Env env) {
+Expression leq_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     Symbol s2 = e2->type_check(env)->type;
     if (((s1 == Int) && (s2 == Int)) ||
@@ -869,7 +876,7 @@ Expression leq_class::type_check(Env env) {
     return this;
 }
 
-Expression comp_class::type_check(Env env) {
+Expression comp_class::type_check(Environment env) {
     Symbol s1 = e1->type_check(env)->type;
     if (s1 == Bool) {
         type = Bool;
@@ -881,25 +888,25 @@ Expression comp_class::type_check(Env env) {
     return this;
 }
 
-Expression int_const_class::type_check(Env env) {
+Expression int_const_class::type_check(Environment env) {
     type = Int;
 
     return this;
 }
 
-Expression bool_const_class::type_check(Env env) {
+Expression bool_const_class::type_check(Environment env) {
     type = Bool;
 
     return this;
 }
 
-Expression string_const_class::type_check(Env env) {
+Expression string_const_class::type_check(Environment env) {
     type = Str;
 
     return this;
 }
 
-Expression new__class::type_check(Env env) {
+Expression new__class::type_check(Environment env) {
     Symbol s = type_name;
     if (s == SELF_TYPE) {
         type = s;
@@ -913,7 +920,7 @@ Expression new__class::type_check(Env env) {
     return this;
 }
 
-Expression isvoid_class::type_check(Env env) {
+Expression isvoid_class::type_check(Environment env) {
     Symbol s = e1->type_check(env)->type;
     if (!env.cla_table->is_class_exit(s)) {
         env.cla_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
@@ -924,13 +931,13 @@ Expression isvoid_class::type_check(Env env) {
     return this;
 }
 
-Expression no_expr_class::type_check(Env env) {
+Expression no_expr_class::type_check(Environment env) {
     type = No_type;
 
     return this;
 }
 
-Expression object_class::type_check(Env env) {
+Expression object_class::type_check(Environment env) {
     if (name == self) {
         type = SELF_TYPE;
     } else if (env.sym_table->lookup(name) != NULL) {
@@ -970,7 +977,7 @@ void program_class::semant() {
 
     /* some semantic analysis code may go here */
     if ((!classtable->errors()) && (classtable->check_acyclic_main_nodefine())) {
-        Env env(classtable);
+        Environment env(classtable);
         for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
             env.sym_table->enterscope();
             env.cur_class = classes->nth(i);

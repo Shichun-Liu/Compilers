@@ -1,4 +1,45 @@
-bad.cl:5: Class C, or an ancestor of C, is involved in an inheritance cycle.
-bad.cl:3: Class B, or an ancestor of B, is involved in an inheritance cycle.
-bad.cl:1: Class A, or an ancestor of A, is involved in an inheritance cycle.
-Compilation halted due to static semantic errors.
+#2
+_program
+  #2
+  _class
+    C
+    Object
+    "bad/bad8.cl"
+    (
+    #3
+    _attr
+      c
+      A
+      #0
+      _no_expr
+      : _no_type
+    )
+  #5
+  _class
+    A
+    C
+    "bad/bad8.cl"
+    (
+    #6
+    _attr
+      a
+      C
+      #0
+      _no_expr
+      : _no_type
+    )
+  #10
+  _class
+    Main
+    Object
+    "bad/bad8.cl"
+    (
+    #11
+    _method
+      main
+      C
+      #11
+      _new
+        C
+      : C
+    )
