@@ -13,10 +13,10 @@ class C inherits IO {
     f5() : SELF_TYPE {(new C)}; --weird
 
     
-    -- f6(a : Int, a : Bool) : Int {1};
-    -- f7(a : SELF_TYPE) : Int {1};
+    f6(a : Int, a : Bool) : Int {1};
+    f7(a : SELF_TYPE) : Int {1};
 
-    -- f8(a : Int, b : Bool) : Int {a <- b};
+    f8(a : Int, b : Bool) : Int {a <- b};
     f9() : Int {{self <- c;1;}};
 };
 

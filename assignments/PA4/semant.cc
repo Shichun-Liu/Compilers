@@ -579,9 +579,12 @@ Symbol branch_class::type_check(Environment env) {
 Expression assign_class::type_check(Environment env) {
     Symbol left_type = *env.sym_table->lookup(name);
     Symbol right_type = expr->type_check(env)->type;
-    if (left_type == SELF_TYPE) {
+    if (name == self || left_type == SELF_TYPE) {
         env.cla_table->semant_error(env.cur_class->get_filename(), this)
             << "Cannot assign to 'self'." << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this)
+            << "Type " << right_type << " of assigned expression does not conform to declared type "
+            << "SELF_TYPE of identifier " << name << "." << endl;
         type = Object;
     } else if (env.cla_table->is_sub_class(right_type, left_type)) {
         type = right_type;
