@@ -1,10 +1,8 @@
--- 
+-- attribute type check
 class C {
-    c : A;
+    c : Int <- "s";
 };
-class A inherits C {
-    a : C;
-};
+
 
 
 class Main {

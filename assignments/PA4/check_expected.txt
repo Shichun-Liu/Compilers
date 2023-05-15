@@ -1,5 +1,8 @@
-bad/bad9.cl:4: 'self' cannot be the name of an attribute.
-bad/bad9.cl:6: Inferred return type C of method f1 does not conform to declared return type Int.
-bad/bad9.cl:7: Inferred return type SELF_TYPE of method f2 does not conform to declared return type Int.
-bad/bad9.cl:8: Undefined return type D in method f3.
+bad/bad9.cl:6: 'self' cannot be the name of an attribute.
+bad/bad9.cl:9: Inferred return type C of method f1 does not conform to declared return type Int.
+bad/bad9.cl:10: Inferred return type SELF_TYPE of method f2 does not conform to declared return type Int.
+bad/bad9.cl:11: Undefined return type D in method f3.
+bad/bad9.cl:13: Inferred return type C of method f5 does not conform to declared return type SELF_TYPE.
+bad/bad9.cl:20: Cannot assign to 'self'.
+bad/bad9.cl:20: Type C of assigned expression does not conform to declared type SELF_TYPE of identifier self.
 Compilation halted due to static semantic errors.
