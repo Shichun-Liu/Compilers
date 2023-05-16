@@ -420,12 +420,15 @@ Symbol ClassTable::get_return_type(Symbol name, Symbol method) {
     return NULL;
 }
 
-bool ClassTable::check(Formals formals, std::vector<Symbol> par_types) {
+bool ClassTable::check(Formals formals, std::vector<Symbol> par_types, Formal& formal, Symbol& wrong_type, Symbol& true_type) {
     int i = formals->first();
     int j = 0;
     int n = par_types.size();
     while (formals->more(i) && (j < n)) {
         if (!is_sub_class(par_types[j], formals->nth(i)->get_type())) {
+            formal = formals->nth(i);
+            wrong_type = formals->nth(i)->get_type();
+            true_type = par_types[j];
             return false;
         }
         j++;
@@ -629,8 +632,13 @@ Expression static_dispatch_class::type_check(Environment env) {
         return this;
     }
 
-    if (!env.cla_table->check(formals, par_types)) {
-        env.cla_table->semant_error(env.cur_class) << "Par type define wrong!" << endl;
+    Formal wrong_formal;
+    Symbol wrong_type, true_type;
+    if (!env.cla_table->check(formals, par_types, wrong_formal, wrong_type, true_type)) {
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "In call of method " << name << ", type " 
+            << wrong_type << " of parameter " << wrong_formal->get_name() 
+            << " does not conform to declared type_static " << true_type << "." << endl;
         type = Object;
 
         return this;
@@ -646,20 +654,20 @@ Expression static_dispatch_class::type_check(Environment env) {
 }
 
 Expression dispatch_class::type_check(Environment env) {
-    Symbol t0 = expr->type_check(env)->type;
+    Symbol expr_type = expr->type_check(env)->type;
 
-    Symbol cur_class = t0;
-    if (t0 == SELF_TYPE) {
+    Symbol cur_class = expr_type;
+    if (expr_type == SELF_TYPE) {
         cur_class = env.cur_class->get_name();
     }
 
     std::vector<Symbol> par_types;
     for (int i = actual->first(); actual->more(i); i = actual->next(i)) {
-        Symbol t = actual->nth(i)->type_check(env)->type;
-        if (t == SELF_TYPE) {
-            t = env.cur_class->get_name();
+        Symbol par_type = actual->nth(i)->type_check(env)->type;
+        if (par_type == SELF_TYPE) {
+            par_type = env.cur_class->get_name();
         }
-        par_types.push_back(t);
+        par_types.push_back(par_type);
     }
 
     Formals formals = env.cla_table->get_formals(cur_class, name);
@@ -671,16 +679,20 @@ Expression dispatch_class::type_check(Environment env) {
 
         return this;
     }
-
-    if (!env.cla_table->check(formals, par_types)) {
-        env.cla_table->semant_error(env.cur_class) << "Par type define wrong!" << endl;
+    Formal wrong_formal;
+    Symbol wrong_type, true_type;
+    if (!env.cla_table->check(formals, par_types, wrong_formal, wrong_type, true_type)) {
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "In call of method " << name << ", type " 
+            << true_type << " of parameter " << wrong_formal->get_name()
+            << " does not conform to declared type " << wrong_type << "." << endl;
         type = Object;
 
         return this;
     }
 
     if (return_type == SELF_TYPE) {
-        type = t0;
+        type = expr_type;
     } else {
         type = return_type;
     }

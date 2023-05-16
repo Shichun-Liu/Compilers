@@ -51,7 +51,7 @@ public:
     Symbol get_parents(Symbol s, std::vector<Symbol>& v);
     Formals get_formals(Symbol name, Symbol method);
     Symbol get_return_type(Symbol name, Symbol method);
-    bool check(Formals formals, std::vector<Symbol> return_type);
+    bool check(Formals formals, std::vector<Symbol> return_type, Formal& formal, Symbol& wrong_type, Symbol& true_type);
 };
 
 #endif
