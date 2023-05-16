@@ -11,4 +11,18 @@ bad/bad9.cl:26: Cannot assign to 'self'.
 bad/bad9.cl:26: Type C of assigned expression does not conform to declared type SELF_TYPE of identifier self.
 bad/bad9.cl:29: In call of method f0, type Int of parameter b does not conform to declared type Bool.
 bad/bad9.cl:30: In call of method f0, type Int of parameter b does not conform to declared type Bool.
+bad/bad9.cl:31: Method f0 called with wrong number of arguments.
+bad/bad9.cl:34: Predicate of 'if' does not have type Bool.
+bad/bad9.cl:35: Loop condition does not have type Bool.
+bad/bad9.cl:47: 'self' cannot be bound in a 'let' expression.
+bad/bad9.cl:48: Inferred type Int of initialization of a does not conform to identifier's declared type C.
+bad/bad9.cl:51: non-Int arguments: Int + C
+bad/bad9.cl:52: non-Int arguments: Int - C
+bad/bad9.cl:53: non-Int arguments: Int * C
+bad/bad9.cl:54: non-Int arguments: Int / C
+bad/bad9.cl:55: non-Int arguments: Int < C
+bad/bad9.cl:56: Illegal comparison with a basic type.
+bad/bad9.cl:57: non-Int arguments: Int <= C
+bad/bad9.cl:58: Argument of 'not' has type C instead of Bool.
+bad/bad9.cl:5: Doesn't have class!
 Compilation halted due to static semantic errors.
