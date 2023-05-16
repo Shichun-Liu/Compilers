@@ -252,14 +252,14 @@ void ClassTable::add_to_class_table(Class_ c) {
 }
 
 bool ClassTable::check_acyclic_main_nodefine() {
-    bool main_flag = false;
+    bool is_main = false;
     bool has_cycle = false;
     for (auto it = inhert_graph.begin(); it != inhert_graph.end(); it++) {
         Symbol child = it->first;
         Symbol parent = it->second;
 
         if (child == Main) {
-            main_flag = true;
+            is_main = true;
         }
 
         while (parent != No_class) {
@@ -284,7 +284,7 @@ bool ClassTable::check_acyclic_main_nodefine() {
         return false;
     }
 
-    if (!main_flag) {
+    if (!is_main) {
         semant_error() << "Class Main is not defined." << endl;
         return false;
     }
@@ -460,6 +460,9 @@ void method_class::add_to_env(Environment env) {
 void attr_class::add_to_env(Environment env) {
     if (env.sym_table->probe(name) == NULL) {
         env.sym_table->addid(name, &type_decl);
+    } else if (!env.cla_table->is_class_exit(type_decl)) {
+        env.cla_table->semant_error(env.cur_class->get_filename(), this)
+            << "Class " << type_decl << " of attribute " << name << " is undefined."<< endl;
     } else {
         env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Attribute "
             << name << " is multiply defined in class." << endl;
@@ -627,7 +630,8 @@ Expression static_dispatch_class::type_check(Environment env) {
     Symbol return_type = env.cla_table->get_return_type(cur_class, name);
 
     if ((formals == NULL) || (return_type == NULL)) {
-        env.cla_table->semant_error(env.cur_class) << "Method define wrong!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "Dispatch to undefined method " << name << "." << endl;
         type = Object;
 
         return this;
@@ -681,7 +685,8 @@ Expression dispatch_class::type_check(Environment env) {
     Symbol return_type = env.cla_table->get_return_type(cur_class, name);
 
     if ((formals == NULL) || (return_type == NULL)) {
-        env.cla_table->semant_error(env.cur_class) << "Method define wrong!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "Dispatch to undefined method " << name << "." << endl;
         type = Object;
 
         return this;
@@ -981,7 +986,8 @@ Expression new__class::type_check(Environment env) {
 Expression isvoid_class::type_check(Environment env) {
     Symbol s = e1->type_check(env)->type;
     if (!env.cla_table->is_class_exit(s)) {
-        env.cla_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "Undeclared identifier d." << endl;
         type = Object;
     }
     type = Bool;
@@ -1001,7 +1007,8 @@ Expression object_class::type_check(Environment env) {
     } else if (env.sym_table->lookup(name) != NULL) {
         type = *(env.sym_table->lookup(name));
     } else {
-        env.cla_table->semant_error(env.cur_class) << "Doesn't have class!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "Class " << type << " of attribute " << name << " is undefined." << endl;
         type = Object;
     }
 

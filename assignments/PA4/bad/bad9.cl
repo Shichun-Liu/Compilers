@@ -5,6 +5,7 @@ class B inherits A {};
 class C inherits IO {
     self : C;
     c : C;
+    d : D;
     bl : Bool;
     it : Int;
     f0(a: Int, b: Bool) : Int {1};
@@ -13,7 +14,7 @@ class C inherits IO {
     f() : C {self};
     f1() : Int { (new C) };
     f2() : Int { self };
-    f3() : D {self};
+    f3() : F {self};
     f4() : SELF_TYPE {self};
     f5() : SELF_TYPE {(new C)}; --weird
 
@@ -58,9 +59,14 @@ class C inherits IO {
     f24() : Int {{not c; 1;}};
 
     -- new
-    f25() : Int {{new D; 1;}};
+    f25() : Int {{new F; 1;}};
+
+    -- isvoid
+    f26() : Int {{isvoid c; 1;}};
 
 };
+
+class D {};
 
 class Main {
 	a : C;
