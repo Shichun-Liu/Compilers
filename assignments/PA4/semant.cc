@@ -92,7 +92,7 @@ ClassTable::ClassTable(Classes classes) : semant_errors(0), error_stream(cerr) {
     install_basic_classes();
 
     for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
-        add_to_class_table(classes->nth(i));
+        add_new_class(classes->nth(i));
     }
 }
 
@@ -192,11 +192,11 @@ void ClassTable::install_basic_classes() {
                                           no_expr()))),
                filename);
 
-    add_to_class_table(Object_class);
-    add_to_class_table(IO_class);
-    add_to_class_table(Int_class);
-    add_to_class_table(Bool_class);
-    add_to_class_table(Str_class);
+    add_new_class(Object_class);
+    add_new_class(IO_class);
+    add_new_class(Int_class);
+    add_new_class(Bool_class);
+    add_new_class(Str_class);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,31 +230,28 @@ ostream &ClassTable::semant_error() {
 
 // TODO
 // add class to classtable
-void ClassTable::add_to_class_table(Class_ c) {
+void ClassTable::add_new_class(Class_ c) {
     Symbol name = c->get_name();
     Symbol parent = c->get_parent();
-    // Features features = c->get_features();
-    // Symbol filename = c->get_filename();
     if (is_basic_symbol_class(parent)) {
         semant_error(c) << "Class " << name << " cannot inherit class " << parent << "." << endl;
     } else if ((class_table.find(name) != class_table.end()) ||
-               (inhert_graph.find(name) != inhert_graph.end())) {
+               (inhert_table.find(name) != inhert_table.end())) {
         if (is_basic_symbol_class(name)) {
-            semant_error(c) << "Redefinition of basic class "
-                            << name << "." << endl;
+            semant_error(c) << "Redefinition of basic class " << name << "." << endl;
         } else {
             semant_error(c) << "Class " << name << " was previously defined." << endl;
         }
     } else {
         class_table[name] = c;
-        inhert_graph[name] = parent;
+        inhert_table[name] = parent;
     }
 }
 
-bool ClassTable::check_acyclic_main_nodefine() {
+bool ClassTable::check_acyclic_graph() {
     bool is_main = false;
     bool has_cycle = false;
-    for (auto it = inhert_graph.begin(); it != inhert_graph.end(); it++) {
+    for (auto it = inhert_table.begin(); it != inhert_table.end(); it++) {
         Symbol child = it->first;
         Symbol parent = it->second;
 
@@ -272,12 +269,12 @@ bool ClassTable::check_acyclic_main_nodefine() {
                 break;
             }
 
-            if (!inhert_graph.count(parent)) {
+            if (!inhert_table.count(parent)) {
                 semant_error(class_table[child]) << "Class " << child
                     << " inherits from an undefined class " << parent << "." << endl;
                 return false;
             }
-            parent = inhert_graph[parent];
+            parent = inhert_table[parent];
         }
     }
     if (has_cycle) {
@@ -297,13 +294,13 @@ Class_ ClassTable::get_class(Symbol s) {
 }
 
 Symbol ClassTable::get_same_method_parent(Symbol child, Symbol name) {
-    Symbol parent = inhert_graph[child];
+    Symbol parent = inhert_table[child];
     while (parent != No_class) {
         Class_ parent_class = class_table[parent];
         if (parent_class->get_method(name)) {
             return parent_class->get_name();
         }
-        parent = inhert_graph[parent];
+        parent = inhert_table[parent];
     }
 
     return NULL;
@@ -342,7 +339,7 @@ bool ClassTable::check_method(Symbol s1, Symbol s2, Symbol name) {
 }
 
 bool ClassTable::is_class_exit(Symbol s) {
-    return inhert_graph.count(s);
+    return inhert_table.count(s);
 }
 
 bool ClassTable::is_sub_class(Symbol s1, Symbol s2) {
@@ -354,7 +351,7 @@ bool ClassTable::is_sub_class(Symbol s1, Symbol s2) {
         if (s1 == s2) {
             return true;
         }
-        s1 = inhert_graph[s1];
+        s1 = inhert_table[s1];
     }
 
     return false;
@@ -363,24 +360,19 @@ bool ClassTable::is_sub_class(Symbol s1, Symbol s2) {
 Symbol ClassTable::get_parents(Symbol s, std::vector<Symbol> &v) {
     while (s != No_class) {
         v.push_back(s);
-        s = inhert_graph[s];
+        s = inhert_table[s];
     }
 }
 
-Symbol ClassTable::lub(Symbol s1, Symbol s2) {
+Symbol ClassTable::lowest_common_ancestor(Symbol s1, Symbol s2) {
     Symbol res = Object;
     std::vector<Symbol> v1;
     std::vector<Symbol> v2;
     get_parents(s1, v1);
     get_parents(s2, v2);
-    int n1 = v1.size();
-    int n2 = v2.size();
-    int i = n1 - 1;
-    int j = n2 - 1;
-    while ((i >= 0) && (j >= 0) && (v1[i] == v2[j])) {
+    int n1 = v1.size(), n2 = v2.size();
+    for (int i = n1 - 1, j = n2 - 1;(i >= 0) && (j >= 0) && (v1[i] == v2[j]);i--, j--) {
         res = v1[i];
-        i--;
-        j--;
     }
 
     return res;
@@ -397,7 +389,7 @@ Formals ClassTable::get_formals(Symbol name, Symbol method) {
             }
         }
 
-        c = inhert_graph[c];
+        c = inhert_table[c];
     }
 
     return NULL;
@@ -414,13 +406,13 @@ Symbol ClassTable::get_return_type(Symbol name, Symbol method) {
             }
         }
 
-        c = inhert_graph[c];
+        c = inhert_table[c];
     }
 
     return NULL;
 }
 
-bool ClassTable::check(Formals formals, std::vector<Symbol> par_types, Formal& formal, Symbol& wrong_type, Symbol& true_type, bool &wrong_number) {
+bool ClassTable::check_formals(Formals formals, std::vector<Symbol> par_types, Formal& formal, Symbol& wrong_type, Symbol& true_type, bool &wrong_number) {
     int i = formals->first();
     int j = 0;
     int n = par_types.size();
@@ -454,6 +446,12 @@ void class__class::gather_attribute(Environment env) {
 
 // method_class do nothing
 void method_class::add_to_env(Environment env) {
+    // if (env.sym_table->probe(name) == NULL) {
+    //     env.sym_table->addid(name, &return_type);
+    // } else {
+    //     env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+    //         << "Method " << name << " is multiply defined." << endl;
+    // }
 }
 
 // attr_class
@@ -530,6 +528,7 @@ Feature method_class::type_check(Environment env) {
             env.cla_table->semant_error(env.cur_class) << "Method " << name << "inherent wrong!" << endl;
         }
     }
+
 
     Symbol inferred_return_type = expr->type_check(env)->type;
     if (return_type == SELF_TYPE || return_type == env.cur_class->get_name()) {
@@ -640,7 +639,7 @@ Expression static_dispatch_class::type_check(Environment env) {
     Formal wrong_formal;
     Symbol wrong_type, true_type;
     bool wrong_number = false;
-    if (!env.cla_table->check(formals, par_types, wrong_formal, wrong_type, true_type, wrong_number)) {
+    if (!env.cla_table->check_formals(formals, par_types, wrong_formal, wrong_type, true_type, wrong_number)) {
         if (wrong_number) {
             env.cla_table->semant_error(env.cur_class->get_filename(), this)
                 << "Method " << name << " called with wrong number of arguments." << endl;
@@ -695,7 +694,7 @@ Expression dispatch_class::type_check(Environment env) {
     Formal wrong_formal;
     Symbol wrong_type, true_type;
     bool wrong_number = false;
-    if (!env.cla_table->check(formals, par_types, wrong_formal, wrong_type, true_type, wrong_number)) {
+    if (!env.cla_table->check_formals(formals, par_types, wrong_formal, wrong_type, true_type, wrong_number)) {
         if (wrong_number) {
             env.cla_table->semant_error(env.cur_class->get_filename(), this)
                 << "Method " << name << " called with wrong number of arguments." << endl;
@@ -734,7 +733,7 @@ Expression cond_class::type_check(Environment env) {
             << "Predicate of 'if' does not have type Bool." << endl;
         type = Object;
     } else {
-        type = env.cla_table->lub(t1, t2);
+        type = env.cla_table->lowest_common_ancestor(t1, t2);
     }
 
     return this;
@@ -771,7 +770,7 @@ Expression typcase_class::type_check(Environment env) {
     type = cases->nth(i)->type_check(env);
     for (; cases->more(i); i = cases->next(i)) {
         env.sym_table->enterscope();
-        type = env.cla_table->lub(type, cases->nth(i)->type_check(env));
+        type = env.cla_table->lowest_common_ancestor(type, cases->nth(i)->type_check(env));
         env.sym_table->exitscope();
     }
 
@@ -1041,7 +1040,7 @@ void program_class::semant() {
     ClassTable *classtable = new ClassTable(classes);
 
     /* some semantic analysis code may go here */
-    if ((!classtable->errors()) && (classtable->check_acyclic_main_nodefine())) {
+    if ((!classtable->errors()) && (classtable->check_acyclic_graph())) {
         Environment env(classtable);
         for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
             env.sym_table->enterscope();

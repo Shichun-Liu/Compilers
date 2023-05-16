@@ -31,7 +31,7 @@ private:
 	
     // TODO: acyclic inhert
     std::unordered_map<Symbol, Class_> class_table;
-    std::unordered_map<Symbol, Symbol> inhert_graph;
+    std::unordered_map<Symbol, Symbol> inhert_table;
 
 public:
     ClassTable(Classes);
@@ -39,20 +39,20 @@ public:
     ostream& semant_error();
     ostream& semant_error(Class_ c);
     ostream& semant_error(Symbol filename, tree_node* t);
-    // my add
-    void add_to_class_table(Class_ c);
-    bool check_acyclic_main_nodefine();
-    Class_ get_class(Symbol s);
-    Symbol get_same_method_parent(Symbol child, Symbol name);
+    
+    void add_new_class(Class_ c);
+    bool check_acyclic_graph();
     bool check_method(Symbol s1, Symbol s2, Symbol name);
+    bool check_formals(Formals formals, std::vector<Symbol> return_type, 
+            Formal& formal, Symbol& wrong_type, Symbol& true_type, bool& wrong_number);
     bool is_class_exit(Symbol s);
     bool is_sub_class(Symbol s1, Symbol s2);
-    Symbol lub(Symbol s1, Symbol s2);
-    Symbol get_parents(Symbol s, std::vector<Symbol>& v);
+    Symbol  get_same_method_parent(Symbol child, Symbol name);
+    Class_  get_class(Symbol s);
+    Symbol  get_parents(Symbol s, std::vector<Symbol>& v);
     Formals get_formals(Symbol name, Symbol method);
-    Symbol get_return_type(Symbol name, Symbol method);
-    bool check(Formals formals, std::vector<Symbol> return_type, 
-            Formal& formal, Symbol& wrong_type, Symbol& true_type, bool& wrong_number);
+    Symbol  get_return_type(Symbol name, Symbol method);
+    Symbol lowest_common_ancestor(Symbol s1, Symbol s2);
 };
 
 #endif

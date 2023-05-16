@@ -9,6 +9,7 @@ class C inherits IO {
     bl : Bool;
     it : Int;
     f0(a: Int, b: Bool) : Int {1};
+    -- f0() : Int {1};
 
     -- method type check, with self type and cur_class->get_name()
     f() : C {self};
