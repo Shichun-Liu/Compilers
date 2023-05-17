@@ -1,15 +1,22 @@
 -- feature check
 class A {};
-class B inherits A {};
+class B inherits A {
+    f0() : Int {1};
+};
 
-class C inherits IO {
-    self : C;
+class C inherits B {
     c : C;
     d : D;
     bl : Bool;
     it : Int;
-    f0(a: Int, b: Bool) : Int {1};
-    -- f0() : Int {1};
+
+    -- wrong attribute
+    self : C;
+    it_wrong : Int <- "True";
+
+    f0() : Int {1};
+    f00(a : Int) : Int {a};
+    c(a: Int, b: Bool) : Int {c.f0()};
 
     -- method type check, with self type and cur_class->get_name()
     f() : C {self};
@@ -28,16 +35,16 @@ class C inherits IO {
     f9() : Int {{self <- c;1;}};
 
     -- dispatch check
-    f10() : Int {{(new C).f0(it, it); 1;}};
-    f11() : Int {{c.f0(it, it); 1;}};
-    f12() : Int {{c.f0(); 1;}};
+    f10() : Int {{(new C).f00(it, it); 1;}};
+    f11() : Int {{c.f00(bl); 1;}};
+    f12() : Int {{c@B.f0(it);}};
 
     -- condition check
     f13() : Int {{if c then 1 else 1 fi;1;}};
     f14() : Int {{while c loop 1 pool;1;}};
 
     -- case
-    -- f15() : Int {{
+    -- f15_() : Int {{
     --     case c of
     --         c : C => 1;
     --         a : C => 2;
@@ -47,7 +54,7 @@ class C inherits IO {
 
     -- let
     f15() : Int {{let self : C <- c in 1;1;}};
-    f16() : Int {{let a : C <- 1+1 in 1;1;}};
+    f16() : Int {{let a : Bool <- 1+1 in 1;1;}};
 
     -- +-*/
     f17() : Int {{1 + c; 1;}};
@@ -61,9 +68,6 @@ class C inherits IO {
 
     -- new
     f25() : Int {{new F; 1;}};
-
-    -- isvoid
-    f26() : Int {{isvoid c; 1;}};
 
 };
 

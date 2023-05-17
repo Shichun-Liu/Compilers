@@ -1,4 +1,4 @@
--- acyclic inheritance
+-- cyclic inheritance
 
 class A inherits C {};
 

@@ -236,7 +236,7 @@ void ClassTable::add_new_class(Class_ c) {
     if (is_basic_symbol_class(parent)) {
         semant_error(c) << "Class " << name << " cannot inherit class " << parent << "." << endl;
     } else if ((class_table.find(name) != class_table.end()) ||
-               (inhert_table.find(name) != inhert_table.end())) {
+               (inherit_table.find(name) != inherit_table.end())) {
         if (is_basic_symbol_class(name)) {
             semant_error(c) << "Redefinition of basic class " << name << "." << endl;
         } else {
@@ -244,63 +244,63 @@ void ClassTable::add_new_class(Class_ c) {
         }
     } else {
         class_table[name] = c;
-        inhert_table[name] = parent;
+        inherit_table[name] = parent;
     }
 }
 
 bool ClassTable::check_acyclic_graph() {
-    bool is_main = false;
-    bool has_cycle = false;
-    for (auto it = inhert_table.begin(); it != inhert_table.end(); it++) {
+    bool with_main = false;
+    bool with_cycle = false;
+    for (auto it = inherit_table.begin(); it != inherit_table.end(); it++) {
         Symbol child = it->first;
         Symbol parent = it->second;
 
         if (child == Main) {
-            is_main = true;
+            with_main = true;
         }
 
         while (parent != No_class) {
             // cycle
             if (parent == child) {
-                has_cycle = true;
+                with_cycle = true;
                 semant_error(class_table[child]) << "Class " << child
                     << ", or an ancestor of " << child
                     << ", is involved in an inheritance cycle." << endl;
                 break;
             }
 
-            if (!inhert_table.count(parent)) {
+            if (!class_table.count(parent)) {
                 semant_error(class_table[child]) << "Class " << child
                     << " inherits from an undefined class " << parent << "." << endl;
                 return false;
             }
-            parent = inhert_table[parent];
+            parent = inherit_table[parent];
         }
     }
-    if (has_cycle) {
+    if (with_cycle) {
         return false;
     }
 
-    if (!is_main) {
+    if (!with_main) {
         semant_error() << "Class Main is not defined." << endl;
         return false;
     }
     return true;
 }
 
-// s map to its class
+
 Class_ ClassTable::get_class(Symbol s) {
     return class_table[s];
 }
 
 Symbol ClassTable::get_same_method_parent(Symbol child, Symbol name) {
-    Symbol parent = inhert_table[child];
+    Symbol parent = inherit_table[child];
     while (parent != No_class) {
         Class_ parent_class = class_table[parent];
         if (parent_class->get_method(name)) {
             return parent_class->get_name();
         }
-        parent = inhert_table[parent];
+        parent = inherit_table[parent];
     }
 
     return NULL;
@@ -339,7 +339,7 @@ bool ClassTable::check_method(Symbol s1, Symbol s2, Symbol name) {
 }
 
 bool ClassTable::is_class_exit(Symbol s) {
-    return inhert_table.count(s);
+    return inherit_table.count(s);
 }
 
 bool ClassTable::is_sub_class(Symbol s1, Symbol s2) {
@@ -351,16 +351,16 @@ bool ClassTable::is_sub_class(Symbol s1, Symbol s2) {
         if (s1 == s2) {
             return true;
         }
-        s1 = inhert_table[s1];
+        s1 = inherit_table[s1];
     }
 
     return false;
 }
 
 Symbol ClassTable::get_parents(Symbol s, std::vector<Symbol> &v) {
-    while (s != No_class) {
+    while (s != No_class && inherit_table.count(s) != 0) {
         v.push_back(s);
-        s = inhert_table[s];
+        s = inherit_table[s];
     }
 }
 
@@ -389,7 +389,7 @@ Formals ClassTable::get_formals(Symbol name, Symbol method) {
             }
         }
 
-        c = inhert_table[c];
+        c = inherit_table[c];
     }
 
     return NULL;
@@ -406,7 +406,7 @@ Symbol ClassTable::get_return_type(Symbol name, Symbol method) {
             }
         }
 
-        c = inhert_table[c];
+        c = inherit_table[c];
     }
 
     return NULL;
@@ -434,28 +434,40 @@ bool ClassTable::check_formals(Formals formals, std::vector<Symbol> par_types, F
     return true;
 }
 
-void class__class::gather_attribute(Environment env) {
+void class__class::add_all_features(Environment env) {
+    std::unordered_map<Symbol, Symbol> methods_table;
+    // std::unordered_map<Symbol, Symbol> attrs_table;
+    
     if (name != Object) {
-        env.cla_table->get_class(parent)->gather_attribute(env);
+        env.cla_table->get_class(parent)->add_all_features(env);
     }
 
     for (int i = features->first(); features->more(i); i = features->next(i)) {
-        features->nth(i)->add_to_env(env);
+        bool is_overrided = false;
+        // features->nth(i)->add_to_env(name, env);
+        Feature cur_feature = features->nth(i);
+        if (cur_feature->is_method()) {
+            Symbol method_name = cur_feature->get_name();
+            if (methods_table.count(method_name) == 0) {
+                methods_table[method_name] = cur_feature->get_return_type();
+            } else {
+                is_overrided = true;
+            }
+            cur_feature->add_to_env(name, env, is_overrided);
+        } else {
+            cur_feature->add_to_env(name, env, false);
+        }
     }
 }
 
-// method_class do nothing
-void method_class::add_to_env(Environment env) {
-    // if (env.sym_table->probe(name) == NULL) {
-    //     env.sym_table->addid(name, &return_type);
-    // } else {
-    //     env.cla_table->semant_error(env.cur_class->get_filename(), this) 
-    //         << "Method " << name << " is multiply defined." << endl;
-    // }
+void method_class::add_to_env(Symbol class_name, Environment env, bool is_overrided) {
+    if(is_overrided) {
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) << "Method "
+            << name << " is multiply defined." << endl;
+    }
 }
 
-// attr_class
-void attr_class::add_to_env(Environment env) {
+void attr_class::add_to_env(Symbol class_name,Environment env, bool is_overrided) {
     if (env.sym_table->probe(name) == NULL) {
         env.sym_table->addid(name, &type_decl);
     } else if (!env.cla_table->is_class_exit(type_decl)) {
@@ -607,7 +619,9 @@ Expression assign_class::type_check(Environment env) {
 Expression static_dispatch_class::type_check(Environment env) {
     Symbol t0 = expr->type_check(env)->type;
     if (!env.cla_table->is_sub_class(t0, type_name)) {
-        env.cla_table->semant_error(env.cur_class) << "Wrong class!" << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "Expression type " << t0 << " does not conform to declared static dispatch type " 
+                << type_name << "." << endl;
         type = Object;
         return this;
     }
@@ -1045,7 +1059,7 @@ void program_class::semant() {
         for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
             env.sym_table->enterscope();
             env.cur_class = classes->nth(i);
-            classes->nth(i)->gather_attribute(env);
+            classes->nth(i)->add_all_features(env);
             classes->nth(i)->type_check(env);
             env.sym_table->exitscope();
         }

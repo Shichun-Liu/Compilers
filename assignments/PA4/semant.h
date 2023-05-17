@@ -31,7 +31,7 @@ private:
 	
     // TODO: acyclic inhert
     std::unordered_map<Symbol, Class_> class_table;
-    std::unordered_map<Symbol, Symbol> inhert_table;
+    std::unordered_map<Symbol, Symbol> inherit_table;
 
 public:
     ClassTable(Classes);

@@ -1,7 +1,7 @@
 class O {
 	a : Int;
 	b : Bool;
-	init(x : Int, y : Bool) : C {{
+	init(x : Int, y : Bool) : SELF_TYPE {{
 		a <- x;
 		b <- y;
 		self;
@@ -13,6 +13,8 @@ class O {
 	};
 };
 
+class A1 inherits IO {};
+class B1 inherits A1 {};
 
 
 (*
@@ -343,11 +345,10 @@ class O {
 	};
  
 	main() : Object {
-	   {
-		  avar <- (new A);
-		  
-		}
-	};
+		
+		   avar <- (new A)
+		   
+	 };
  
  };
  

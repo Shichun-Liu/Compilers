@@ -18,6 +18,7 @@ class ClassTable;
 class Environment {
 public:
     SymbolTable<Symbol, Symbol>* sym_table;
+    // SymbolTable<Symbol, Symbol>* method_table;
     ClassTable* cla_table;
     Class_ cur_class;
     Environment() {
@@ -59,7 +60,7 @@ public:
     virtual Symbol get_name() = 0;
     virtual Symbol get_parent() = 0;
     virtual Features get_features() = 0;
-    virtual void gather_attribute(Environment env) = 0;
+    virtual void add_all_features(Environment env) = 0;
     virtual Class_ type_check(Environment env) = 0;
     virtual Feature get_method(Symbol name) = 0;
 
@@ -76,7 +77,7 @@ public:
     tree_node* copy() { return copy_Feature(); }
     virtual Feature copy_Feature() = 0;
     // TODO
-    virtual void add_to_env(Environment env) = 0;
+    virtual void add_to_env(Symbol class_name, Environment env, bool is_overrided) = 0;
     virtual Feature type_check(Environment env) = 0;
     virtual bool is_method() = 0;
     virtual Symbol get_name() = 0;
@@ -203,9 +204,9 @@ public:
     Symbol get_name() { return name; };
     Symbol get_parent() { return parent; };
     Features get_features() { return features; };
-    void gather_attribute(Environment env);
-    Class_ type_check(Environment env);
     Feature get_method(Symbol name);
+    void add_all_features(Environment env);
+    Class_ type_check(Environment env);
 
 #ifdef Class__SHARED_EXTRAS
     Class__SHARED_EXTRAS
@@ -234,7 +235,7 @@ public:
     void dump(ostream& stream, int n);
 
     // TODO
-    void add_to_env(Environment env);
+    void add_to_env(Symbol class_name, Environment env, bool is_overrided);
     Feature type_check(Environment env);
     bool is_method() { return true; };
     Symbol get_name() { return name; };
@@ -269,7 +270,7 @@ public:
     void dump(ostream& stream, int n);
 
     // TODO
-    void add_to_env(Environment env);
+    void add_to_env(Symbol class_name, Environment env, bool is_overrided);
     Feature type_check(Environment env);
     bool is_method() { return false; };
     Symbol get_name() { return name; };
