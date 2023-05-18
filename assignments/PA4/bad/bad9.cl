@@ -64,7 +64,9 @@ class C inherits B {
 
     -- new
     f25() : Int {{new F; 1;}};
-    -- f26() : Int {{isvoid f; 1;}};
+
+    -- isvoid
+    f26() : Int {{isvoid c; 1;}};
 
 };
 
