@@ -1,30 +1,29 @@
-bad/bad9.cl:14: 'self' cannot be the name of an attribute.
-bad/bad9.cl:15: Inferred type String of initialization of attribute it_wrong does not conform to declared type Int.
-bad/bad9.cl:23: Inferred return type C of method f1 does not conform to declared return type Int.
-bad/bad9.cl:24: Inferred return type SELF_TYPE of method f2 does not conform to declared return type Int.
-bad/bad9.cl:25: Undefined return type F in method f3.
-bad/bad9.cl:27: Inferred return type C of method f5 does not conform to declared return type SELF_TYPE.
-bad/bad9.cl:30: Formal parameter a is multiply defined.
-bad/bad9.cl:31: Formal parameter a cannot have type SELF_TYPE.
-bad/bad9.cl:34: Type Bool of assigned expression does not conform to declared type Int of identifier a.
-bad/bad9.cl:34: Inferred return type Bool of method f8 does not conform to declared return type Int.
-bad/bad9.cl:35: Cannot assign to 'self'.
-bad/bad9.cl:35: Type C of assigned expression does not conform to declared type SELF_TYPE of identifier self.
-bad/bad9.cl:38: Method f00 called with wrong number of arguments.
-bad/bad9.cl:39: In call of method f00, type Bool of parameter a does not conform to declared type Int.
-bad/bad9.cl:40: Method f0 called with wrong number of arguments.
-bad/bad9.cl:40: Inferred return type Object of method f12 does not conform to declared return type Int.
-bad/bad9.cl:43: Predicate of 'if' does not have type Bool.
-bad/bad9.cl:44: Loop condition does not have type Bool.
-bad/bad9.cl:56: 'self' cannot be bound in a 'let' expression.
-bad/bad9.cl:57: Inferred type Int of initialization of a does not conform to identifier's declared type Bool.
-bad/bad9.cl:60: non-Int arguments: Int + C
-bad/bad9.cl:61: non-Int arguments: Int - C
-bad/bad9.cl:62: non-Int arguments: Int * C
-bad/bad9.cl:63: non-Int arguments: Int / C
-bad/bad9.cl:64: non-Int arguments: Int < C
-bad/bad9.cl:65: Illegal comparison with a basic type.
-bad/bad9.cl:66: non-Int arguments: Int <= C
-bad/bad9.cl:67: Argument of 'not' has type C instead of Bool.
-bad/bad9.cl:70: 'new' used with undefined class F.
+bad/bad9.cl:15: 'self' cannot be the name of an attribute.
+bad/bad9.cl:16: Inferred type String of initialization of attribute it_wrong does not conform to declared type Int.
+bad/bad9.cl:24: Inferred return type C of method f1 does not conform to declared return type Int.
+bad/bad9.cl:25: Inferred return type SELF_TYPE of method f2 does not conform to declared return type Int.
+bad/bad9.cl:26: Undefined return type F in method f3.
+bad/bad9.cl:28: Inferred return type C of method f5 does not conform to declared return type SELF_TYPE.
+bad/bad9.cl:31: Formal parameter a is multiply defined.
+bad/bad9.cl:32: Formal parameter a cannot have type SELF_TYPE.
+bad/bad9.cl:35: Type Bool of assigned expression does not conform to declared type Int of identifier a.
+bad/bad9.cl:35: Inferred return type Bool of method f8 does not conform to declared return type Int.
+bad/bad9.cl:36: Cannot assign to 'self'.
+bad/bad9.cl:36: Type C of assigned expression does not conform to declared type SELF_TYPE of identifier self.
+bad/bad9.cl:39: Method f00 called with wrong number of arguments.
+bad/bad9.cl:40: In call of method f00, type Bool of parameter a does not conform to declared type Int.
+bad/bad9.cl:44: Predicate of 'if' does not have type Bool.
+bad/bad9.cl:45: Loop condition does not have type Bool.
+bad/bad9.cl:48: 'self' cannot be bound in a 'let' expression.
+bad/bad9.cl:49: Inferred type Int of initialization of a does not conform to identifier's declared type Bool.
+bad/bad9.cl:54: non-Int arguments: Int + C
+bad/bad9.cl:55: non-Int arguments: Int - C
+bad/bad9.cl:56: non-Int arguments: Int * C
+bad/bad9.cl:57: non-Int arguments: Int / C
+bad/bad9.cl:59: non-Int arguments: Int < C
+bad/bad9.cl:60: Illegal comparison with a basic type.
+bad/bad9.cl:61: non-Int arguments: Int <= C
+bad/bad9.cl:62: Argument of 'not' has type C instead of Bool.
+bad/bad9.cl:63: Argument of '~' has type Bool instead of Int.
+bad/bad9.cl:66: 'new' used with undefined class F.
 Compilation halted due to static semantic errors.

@@ -248,7 +248,7 @@ void ClassTable::add_new_class(Class_ c) {
     }
 }
 
-bool ClassTable::check_acyclic_graph() {
+bool ClassTable::check_acyclic_and_main() {
     bool with_main = false;
     bool with_cycle = false;
     for (auto it = inherit_table.begin(); it != inherit_table.end(); it++) {
@@ -436,7 +436,7 @@ bool ClassTable::check_formals(Formals formals, std::vector<Symbol> par_types, F
 
 void class__class::add_all_features(Environment env) {
     std::unordered_map<Symbol, Symbol> methods_table;
-    // std::unordered_map<Symbol, Symbol> attrs_table;
+    std::unordered_map<Symbol, Symbol> attrs_table;
     
     if (name != Object) {
         env.cla_table->get_class(parent)->add_all_features(env);
@@ -444,7 +444,6 @@ void class__class::add_all_features(Environment env) {
 
     for (int i = features->first(); features->more(i); i = features->next(i)) {
         bool is_overrided = false;
-        // features->nth(i)->add_to_env(name, env);
         Feature cur_feature = features->nth(i);
         if (cur_feature->is_method()) {
             Symbol method_name = cur_feature->get_name();
@@ -507,8 +506,14 @@ Feature attr_class::type_check(Environment env) {
     Symbol inferred_return_type = init->type_check(env)->type;
 
     if (name == self) {
-        env.cla_table->semant_error(env.cur_class->get_filename(), this) << "'self' cannot be the name of an attribute." << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+            << "'self' cannot be the name of an attribute." << endl;
     }
+    
+    if (!env.cla_table->is_class_exit(type_decl)) {
+        env.cla_table->semant_error(env.cur_class->get_filename(), this)
+            << "Class " << type_decl << " of attribute " << name << " is undefined." << endl;
+    } 
 
     if (inferred_return_type != No_type) {
         if (inferred_return_type == SELF_TYPE) {
@@ -780,9 +785,8 @@ Expression typcase_class::type_check(Environment env) {
         }
     }
 
-    int i = cases->first();
-    type = cases->nth(i)->type_check(env);
-    for (; cases->more(i); i = cases->next(i)) {
+    type = cases->nth(cases->first())->type_check(env);
+    for (int i = cases->first(); cases->more(i); i = cases->next(i)) {
         env.sym_table->enterscope();
         type = env.cla_table->lowest_common_ancestor(type, cases->nth(i)->type_check(env));
         env.sym_table->exitscope();
@@ -808,27 +812,19 @@ Expression let_class::type_check(Environment env) {
         type = Object;
     } else {
         Symbol expect_type = type_decl;
-        Symbol true_type = init->type_check(env)->type;
+        Symbol init_type = init->type_check(env)->type;
 
-        if (true_type == No_type) {
+        if (init_type != No_type && !env.cla_table->is_sub_class(init_type, expect_type)) {
+            env.cla_table->semant_error(env.cur_class->get_filename(), this)
+                << "Inferred type " << init_type << " of initialization of a does not conform to identifier's declared type "
+                << expect_type << "." << endl;
+            type = Object;
+        } else {
             env.sym_table->enterscope();
             env.sym_table->addid(identifier, &expect_type);
-            Symbol s = body->type_check(env)->type;
-            type = s;
+            Symbol body_type = body->type_check(env)->get_type();
+            type = body_type;
             env.sym_table->exitscope();
-        } else {
-            if (!env.cla_table->is_sub_class(true_type, expect_type)) {
-                env.cla_table->semant_error(env.cur_class->get_filename(), this) 
-                    << "Inferred type " << true_type << " of initialization of a does not conform to identifier's declared type " 
-                    << expect_type << "." << endl;
-                type = Object;
-            } else {
-                env.sym_table->enterscope();
-                env.sym_table->addid(identifier, &expect_type);
-                Symbol s = body->type_check(env)->get_type();
-                type = s;
-                env.sym_table->exitscope();
-            }
         }
 
         return this;
@@ -892,12 +888,12 @@ Expression divide_class::type_check(Environment env) {
 }
 
 Expression neg_class::type_check(Environment env) {
-    Symbol s1 = e1->type_check(env)->type;
-    if (s1 == Int) {
+    Symbol t1 = e1->type_check(env)->type;
+    if (t1 == Int) {
         type = Int;
     } else {
-        env.cla_table->semant_error(env.cur_class) 
-        << "Type should be int!" << " " << s1 << endl;
+        env.cla_table->semant_error(env.cur_class->get_filename(), this) 
+        << "Argument of '~' has type " << t1 <<  " instead of Int."<< endl;
         type = Object;
     }
 
@@ -1000,7 +996,7 @@ Expression isvoid_class::type_check(Environment env) {
     Symbol s = e1->type_check(env)->type;
     if (!env.cla_table->is_class_exit(s)) {
         env.cla_table->semant_error(env.cur_class->get_filename(), this) 
-            << "Undeclared identifier d." << endl;
+            << "Undeclared identifier " << e1 << "." << endl;
         type = Object;
     }
     type = Bool;
@@ -1054,7 +1050,7 @@ void program_class::semant() {
     ClassTable *classtable = new ClassTable(classes);
 
     /* some semantic analysis code may go here */
-    if ((!classtable->errors()) && (classtable->check_acyclic_graph())) {
+    if ((!classtable->errors()) && (classtable->check_acyclic_and_main())) {
         Environment env(classtable);
         for (int i = classes->first(); classes->more(i); i = classes->next(i)) {
             env.sym_table->enterscope();

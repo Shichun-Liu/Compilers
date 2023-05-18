@@ -41,7 +41,7 @@ public:
     ostream& semant_error(Symbol filename, tree_node* t);
     
     void add_new_class(Class_ c);
-    bool check_acyclic_graph();
+    bool check_acyclic_and_main();
     bool check_method(Symbol s1, Symbol s2, Symbol name);
     bool check_formals(Formals formals, std::vector<Symbol> return_type, 
             Formal& formal, Symbol& wrong_type, Symbol& true_type, bool& wrong_number);
