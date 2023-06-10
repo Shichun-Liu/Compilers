@@ -102,9 +102,7 @@ FALSE           f(?i:alse)
 	comment_depth++;
 	BEGIN(COMMENT);
 }
- /* 
-[^\*\)]
- */
+
 <COMMENT>[^\*]|\*[^\)] { 
 	if (yytext[0] == '\n') 	++curr_lineno;
 }

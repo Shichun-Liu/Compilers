@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.list": "bat",
+        "*.flex": "lex",
+        "unordered_map": "cpp"
+    }
+}
