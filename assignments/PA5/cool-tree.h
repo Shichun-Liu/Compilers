@@ -12,7 +12,6 @@
 #include "tree.h"
 #include "cool-tree.handcode.h"
 
-class CgenClassTable;
 
 // define the class for phylum
 // define simple phylum - Program
@@ -42,10 +41,6 @@ public:
 #endif
 };
 
-enum class FeatureType {
-   ATTR_,
-   METHOD_
-};
 
 // define simple phylum - Feature
 typedef class Feature_class *Feature;
@@ -155,7 +150,7 @@ class class__class : public Class__class {
 public:
    Symbol name;
    Symbol parent;
-   Features features;
+   Features features; // 是一个个feature_class的指针
    Symbol filename;
 public:
    class__class(Symbol a1, Symbol a2, Features a3, Symbol a4) {
